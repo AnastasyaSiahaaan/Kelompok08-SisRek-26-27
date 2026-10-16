@@ -1,0 +1,1 @@
+Simpan dataset asli dari eCourse/Google Drive di folder ini setelah memastikan file tersebut adalah dataset dan split resmi untuk proyek kuliah. Jangan simpan file dataset lain sebagai pengganti tanpa konfirmasi.

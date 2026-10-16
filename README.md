@@ -1,4 +1,4 @@
-# GABIN — Recommender System Project
+# Kelompok 08 — Recommender System Project
 
 **Working title:** The Impact of User Interaction History on Collaborative, Content-Based, and Hybrid Recommendation Performance
 

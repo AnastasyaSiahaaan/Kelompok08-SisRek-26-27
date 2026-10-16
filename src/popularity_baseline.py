@@ -2,43 +2,63 @@
 from pathlib import Path
 import pandas as pd
 
-# 1. Tentukan lokasi dataset
-BASE_DIR = Path(__file__).resolve().parent.parent
-TRAIN_PATH = BASE_DIR / "data" / "raw" / "interactions_train.csv"
-OUTPUT_DIR = BASE_DIR / "results"
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+from baseline_common import load_data, evaluate_rankings, RESULT_DIR
 
-# 2. Baca data training
-print("Membaca data training...")
-train = pd.read_csv(TRAIN_PATH)
 
-print("Jumlah interaksi training:", len(train))
+def main():
+    # 1. Baca dataset
+    print("Membaca data training dan validation...")
 
-# 3. Ambil interaksi positif (rating 4 atau 5)
-positive = train[train["rating"] >= 4].copy()
+    train, validation, users, candidates, activity = load_data()
 
-print("Jumlah interaksi positif:", len(positive))
+    print("Jumlah interaksi training:", len(train))
 
-# 4. Hitung jumlah interaksi positif setiap item
-popularity = (
-    positive.groupby("item_id")
-    .size()
-    .reset_index(name="positive_interactions")
-)
+    # 2. Ambil interaksi positif (rating >= 4)
+    positive = train[train["rating"] >= 4].copy()
 
-# 5. Urutkan item dari paling populer
-popularity = popularity.sort_values(
-    by=["positive_interactions", "item_id"],
-    ascending=[False, True]
-).reset_index(drop=True)
+    print("Jumlah interaksi positif:", len(positive))
 
-# 6. Simpan ranking baseline
-output_path = OUTPUT_DIR / "popularity_ranking.csv"
-popularity.to_csv(output_path, index=False)
+    # 3. Hitung jumlah interaksi positif setiap item
+    popularity = (
+        positive.groupby("item_id")
+        .size()
+        .reset_index(name="positive_interactions")
+    )
 
-# 7. Tampilkan 10 item teratas
-print("\n=== TOP 10 POPULARITY BASELINE ===")
-print(popularity.head(10).to_string(index=False))
+    # 4. Urutkan item dari paling populer
+    popularity = popularity.sort_values(
+        by=["positive_interactions", "item_id"],
+        ascending=[False, True]
+    ).reset_index(drop=True)
 
-print("\nTotal item dengan interaksi positif:", len(popularity))
-print("Hasil disimpan di:", output_path)
+    # 5. Simpan ranking popularitas
+    ranking_path = RESULT_DIR / "popularity_ranking.csv"
+    popularity.to_csv(ranking_path, index=False)
+
+    print("\n=== TOP 10 POPULARITY BASELINE ===")
+    print(popularity.head(10).to_string(index=False))
+    print("\nTotal item dengan interaksi positif:", len(popularity))
+    print("Ranking disimpan di:", ranking_path)
+
+    # 6. Siapkan ranking rekomendasi untuk setiap pengguna
+    top_items = popularity["item_id"].astype(str).tolist()
+
+    rankings = {
+        str(user_id): top_items
+        for user_id in users["user_id"].astype(str)
+    }
+
+    # 7. Evaluasi menggunakan evaluator bersama
+    evaluate_rankings(
+        model_name="popularity",
+        rankings=rankings,
+        train=train,
+        validation=validation,
+        users=users,
+        candidates=candidates,
+        activity=activity
+    )
+
+
+if __name__ == "__main__":
+    main()

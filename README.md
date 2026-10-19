@@ -45,7 +45,4 @@ Metrik yang direncanakan dalam CP1: Recall@10 dan NDCG@10.
 
 Jika PowerShell menolak aktivasi environment, salin pesan error yang muncul dan minta bantuan sebelum mengubah pengaturan keamanan.
 
-## Penting tentang dataset
-Jangan membuat split acak atau mengunduh dataset lain tanpa konfirmasi. Proyek kuliah menggunakan split temporal yang ditentukan di materi proyek. Periksa eCourse atau folder Google Drive yang dibagikan dosen/asisten terlebih dahulu. Simpan file asli di `data/raw/` dan jangan mengubah file aslinya.
 
-Setelah nama file dan kolom dataset diketahui, sesuaikan kode pemuatan data sebelum membuat baseline. Dataset belum disertakan di starter project ini.

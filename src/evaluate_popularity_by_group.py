@@ -2,6 +2,8 @@
 from pathlib import Path
 import pandas as pd
 
+from baseline_common import make_user_groups
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 SUPPORT_DIR = BASE_DIR / "data" / "supporting"
 RESULT_DIR = BASE_DIR / "results"
@@ -16,12 +18,8 @@ activity = pd.read_csv(
     SUPPORT_DIR / "user_activity_train.csv"
 )
 
-# Buat kelompok dengan metode yang sama seperti sebelumnya
-activity["activity_group"] = pd.qcut(
-    activity["train_interactions"].rank(method="first"),
-    q=3,
-    labels=["Low", "Medium", "High"]
-)
+# Gunakan definisi kelompok yang sama dengan seluruh baseline lainnya.
+activity = make_user_groups(activity)
 
 # Gabungkan metrik dan kelompok berdasarkan user_id
 merged = metrics.merge(
@@ -36,16 +34,16 @@ summary = (
     merged.groupby("activity_group", observed=True)
     .agg(
         users=("user_id", "nunique"),
-        mean_interactions=("train_interactions", "mean"),
         Recall_at_10=("Recall@10", "mean"),
         NDCG_at_10=("NDCG@10", "mean")
     )
     .reset_index()
 )
 
-summary["mean_interactions"] = summary["mean_interactions"].round(2)
-summary["Recall_at_10"] = summary["Recall_at_10"].round(4)
-summary["NDCG_at_10"] = summary["NDCG_at_10"].round(4)
+summary.insert(0, "model", "popularity")
+summary = summary[
+    ["model", "activity_group", "users", "Recall_at_10", "NDCG_at_10"]
+]
 
 print("=== POPULARITY BASELINE BERDASARKAN AKTIVITAS ===")
 print(summary.to_string(index=False))

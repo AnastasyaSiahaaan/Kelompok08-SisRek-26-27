@@ -135,6 +135,15 @@ result_df = pd.DataFrame(results)
 output_path = RESULT_DIR / "popularity_validation_user_metrics.csv"
 result_df.to_csv(output_path, index=False)
 
+# Simpan metrik keseluruhan dengan format yang sama seperti baseline lain.
+overall_metrics = pd.DataFrame([{
+    "model": "popularity",
+    "Recall@10": result_df["Recall@10"].mean(),
+    "NDCG@10": result_df["NDCG@10"].mean(),
+}])
+overall_output_path = RESULT_DIR / "popularity_overall_metrics.csv"
+overall_metrics.to_csv(overall_output_path, index=False)
+
 print("\n=== HASIL EVALUASI POPULARITY ===")
 print("Pengguna yang berhasil dievaluasi:", len(result_df))
 
@@ -143,3 +152,4 @@ if not result_df.empty:
     print("Mean NDCG@10:", round(result_df["NDCG@10"].mean(), 4))
 
 print("Hasil per pengguna disimpan di:", output_path)
+print("Metrik keseluruhan disimpan di:", overall_output_path)

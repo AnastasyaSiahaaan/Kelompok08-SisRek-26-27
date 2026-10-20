@@ -17,4 +17,4 @@ for folder in folders:
     folder.mkdir(parents=True, exist_ok=True)
     print(f"[OK] Folder tersedia: {folder}")
 
-print("\nEnvironment check selesai.")
+print("\nEnvironment check selesai")

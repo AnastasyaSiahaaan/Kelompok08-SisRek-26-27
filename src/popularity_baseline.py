@@ -1,5 +1,6 @@
 
 from pathlib import Path
+from matplotlib.pylab import positive
 import pandas as pd
 
 from baseline_common import load_data, evaluate_rankings, RESULT_DIR
@@ -18,12 +19,14 @@ def main():
 
     print("Jumlah interaksi positif:", len(positive))
 
-    # 3. Hitung jumlah interaksi positif setiap item
+    # 3. Hitung interaksi positif setiap item kandidat
     popularity = (
         positive.groupby("item_id")
         .size()
-        .reset_index(name="positive_interactions")
-    )
+        .reindex(candidates["item_id"], fill_value=0)
+        .rename("positive_interactions")
+        .reset_index()
+        )
 
     # 4. Urutkan item dari paling populer
     popularity = popularity.sort_values(

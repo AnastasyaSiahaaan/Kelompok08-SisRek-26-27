@@ -52,10 +52,11 @@ def make_user_groups(activity):
     """
     activity = activity.copy()
 
-    activity["activity_group"] = pd.qcut(
-        activity["train_interactions"].rank(method="first"),
-        q=3,
+    activity["activity_group"] = pd.cut(
+        activity["train_interactions"],
+        bins=[0, 5, 8, float("inf")],
         labels=["Low", "Medium", "High"],
+        include_lowest=True,
     )
 
     return activity

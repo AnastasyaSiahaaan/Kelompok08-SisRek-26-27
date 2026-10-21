@@ -45,10 +45,11 @@ def load_data():
 def make_user_groups(activity):
     """
     Membagi pengguna menjadi Low, Medium, dan High berdasarkan
-    jumlah interaksi di data training.
+    jumlah interaksi di data training, dengan batas tetap (pd.cut):
+    Low = 1-5, Medium = 6-8, High >= 9.
 
-    Pengguna dengan jumlah interaksi sama dapat terpisah ke
-    kelompok berbeda karena rank(method="first").
+    Pengguna dengan jumlah interaksi sama selalu berada pada
+    kelompok yang sama.
     """
     activity = activity.copy()
 

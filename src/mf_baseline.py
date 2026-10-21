@@ -54,6 +54,7 @@ R = coo_matrix(
 
 
 # 4. Melatih Matrix Factorization dengan TruncatedSVD
+# Nilai awal CP2, belum dituning; akan dipilih ulang memakai validation sebelum freeze.
 n_components = min(32, min(R.shape) - 1)
 
 if n_components < 2:

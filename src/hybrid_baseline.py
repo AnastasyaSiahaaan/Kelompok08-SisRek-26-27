@@ -25,6 +25,7 @@ def main():
     train["item_id"] = train["item_id"].astype(str)
 
     # Bobot awal Hybrid: MF 50%, CBF 50%
+    # Nilai awal CP2, belum dituning; akan dipilih ulang memakai validation sebelum freeze.
     alpha = 0.5
 
     # 2. Membentuk model MF menggunakan data training

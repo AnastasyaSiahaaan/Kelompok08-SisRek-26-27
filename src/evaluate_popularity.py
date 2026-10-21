@@ -32,6 +32,7 @@ positive_train = train[train["rating"] >= 4]
 popularity = (
     positive_train.groupby("item_id")
     .size()
+    .reindex(candidates["item_id"], fill_value=0)
     .sort_values(ascending=False)
 )
 
@@ -53,9 +54,13 @@ ranking = ranking[
 
 ranked_items = ranking["item_id"].astype(str).tolist()
 
+ranking_path = RESULT_DIR / "popularity_ranking.csv"
+ranking.to_csv(ranking_path, index=False)
+
 print("Jumlah pengguna evaluasi:", len(evaluable_users))
 print("Jumlah kandidat:", len(candidate_items))
 print("Jumlah item dalam ranking:", len(ranked_items))
+print("Ranking disimpan di:", ranking_path)
 
 # 5. Item yang sudah pernah diinteraksikan pengguna saat training
 seen_by_user = (

@@ -1,0 +1,201 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{parskip}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{multirow}
+
+% Warna header tabel
+\definecolor{headerblue}{RGB}{0,70,127}
+\definecolor{rowgray}{RGB}{240,240,240}
+
+\titleformat{\section}{\large\bfseries\color{headerblue}}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+
+\hypersetup{colorlinks=true, linkcolor=headerblue, urlcolor=headerblue}
+
+\begin{document}
+
+%% ---- HEADER ----
+\begin{center}
+  {\Large\bfseries Progress Report CP3 --- Desain Eksperimen}\\[4pt]
+  {\normalsize Kelompok 08 \quad|\quad 12S4054 Sistem Rekomendasi \quad|\quad Institut Teknologi Del}\\
+  {\small Semester Gasal 2026/2027 \quad|\quad Deadline: 7 November 2026}
+\end{center}
+
+\vspace{4pt}\hrule\vspace{8pt}
+
+%% ---- 1. RINGKASAN ----
+\section{Ringkasan}
+
+CP3 menetapkan desain eksperimen lengkap sebelum eksperimen validasi skala penuh dimulai pada W10--W12.
+Protokol evaluasi warm-start, candidate set, leakage rules, hyperparameter search space, dan experiment
+matrix telah ditetapkan dan dikodekan dalam repositori GitHub Kelompok 08.
+
+\textbf{Track:} A --- Sparsitas Riwayat User.\\
+\textbf{Research Question:} Bagaimana jumlah interaksi yang dimiliki user memengaruhi performa
+collaborative, content-based, dan hybrid recommendation?
+
+%% ---- 2. PROTOKOL EVALUASI ----
+\section{Protokol Evaluasi (Warm-Start)}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Komponen} & \textbf{Nilai} \\
+\midrule
+Data split & Official temporal split dari paket proyek; tidak di-reshuffle \\
+Ukuran training & 427.957 interaksi \\
+Ukuran validation & 41.284 (warm: 30.360) \\
+Ukuran test & 42.595 (tidak digunakan sebelum W13) \\
+Evaluable users & 11.659 pengguna dari \texttt{evaluable\_users\_validation\_warm.csv} \\
+Candidate universe & 22.753 item dari \texttt{candidate\_items\_warm.csv} (sama semua model) \\
+Ranking per user & Top-10 \\
+Metrik wajib & \textbf{Recall@10} dan \textbf{NDCG@10} \\
+Item relevan & Rating validation $\geq$ 4 \\
+Seen-item masking & Item training dikeluarkan dari kandidat tiap user \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Model selection dan hyperparameter tuning \textbf{hanya menggunakan validation}. Test set tidak diakses.
+
+%% ---- 3. CANDIDATE SET & LEAKAGE RULES ----
+\section{Candidate Set \& Leakage Rules}
+
+\subsection{Candidate Set}
+Semua model menggunakan \texttt{candidate\_items\_warm.csv} sebagai candidate universe.
+Item yang pernah diinteraksikan user pada training \textbf{dikeluarkan} sebelum rekomendasi dibuat.
+Candidate protocol identik untuk seluruh model yang dibandingkan.
+
+\subsection{Leakage Rules}
+\begin{enumerate}[leftmargin=*, nosep]
+  \item Model hanya dilatih dari data training; validation dan test tidak masuk proses training.
+  \item Official temporal split tidak diacak ulang; interaksi validation/test tidak bocor ke training.
+  \item User profile dan parameter model dibangun dari training saja. Field agregat
+        (\texttt{average\_rating}, \texttt{rating\_number}) tidak digunakan sebagai fitur.
+  \item Candidate protocol sama untuk semua model; tidak ada candidate set yang
+        menguntungkan model tertentu.
+  \item Hyperparameter tuning dan model selection hanya menggunakan validation.
+        Test set tidak digunakan sebelum W13.
+\end{enumerate}
+
+%% ---- 4. EVALUABLE USERS & ACTIVITY GROUPS ----
+\section{Evaluable Users \& Activity Groups}
+
+Pengguna yang masuk evaluasi harus: (a) memiliki riwayat interaksi pada training (warm-start),
+dan (b) memiliki ground-truth positif (rating $\geq$ 4) pada validation.
+
+Kelompok aktivitas (Track A) didefinisikan dari jumlah interaksi training menggunakan \texttt{pd.cut}
+dengan batas tetap, konsisten untuk semua model (\texttt{make\_user\_groups()} di \texttt{baseline\_common.py}):
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{@{}lc@{}}
+\toprule
+\textbf{Kelompok} & \textbf{Jumlah interaksi training} \\
+\midrule
+Low    & 1 -- 5   \\
+Medium & 6 -- 8   \\
+High   & $\geq$ 9 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%% ---- 5. HYPERPARAMETER SEARCH SPACE ----
+\section{Hyperparameter Search Space}
+
+Tuning dilakukan via validation menggunakan \texttt{src/tune\_hyperparameters.py}.
+Semua nilai search space didefinisikan di \texttt{src/config.py}.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Model} & \textbf{Parameter} & \textbf{Search Space} & \textbf{Metode Seleksi} \\
+\midrule
+Popularity        & ---                & Tidak ada tuning    & Tetap \\
+Matrix Factorization & \texttt{n\_components} & \{32, 64, 128\}     & Recall@10 pada validation \\
+TF-IDF CBF        & \texttt{max\_features}  & \{50.000, 100.000\} & Recall@10 pada validation \\
+Hybrid            & \texttt{alpha} (bobot MF) & \{0.3, 0.5, 0.7\}  & Recall@10 pada validation \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Parameter tetap di semua run: \texttt{random\_state=42}, \texttt{n\_iter=7} (MF),
+\texttt{ngram\_range=(1,2)} dan \texttt{min\_df=2} (TF-IDF), normalisasi min-max per user (Hybrid).
+
+%% ---- 6. EXPERIMENT MATRIX ----
+\section{Experiment Matrix}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{ID} & \textbf{Model/Variant} & \textbf{Tujuan} & \textbf{Metrik} \\
+\midrule
+E1      & Popularity                    & Baseline bersama                              & Recall@10, NDCG@10 \\
+E2a--c  & MF ($n$ = 32/64/128)          & Tuning collaborative baseline                 & Recall@10, NDCG@10 \\
+E3a--b  & TF-IDF CBF (feat = 50k/100k)  & Tuning content-based baseline                 & Recall@10, NDCG@10 \\
+E4a--c  & Hybrid ($\alpha$ = 0.3/0.5/0.7) & Tuning hybrid; config dari E2/E3 terbaik    & Recall@10, NDCG@10 \\
+E5      & Track-A Analysis              & Analisis per activity group (Low/Medium/High) & Recall@10, NDCG@10 per group \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+File lengkap: \texttt{results/experiment\_matrix.csv}.
+
+%% ---- 7. REPRODUCIBILITY ----
+\section{Reproducibility Settings}
+
+\begin{itemize}[leftmargin=*, nosep]
+  \item \textbf{Random seed:} \texttt{42} --- dikodekan di \texttt{src/config.py} (\texttt{RANDOM\_SEED}).
+  \item \textbf{Config terpusat:} \texttt{src/config.py} --- semua hyperparameter dan search space.
+  \item \textbf{Run ID format:} \texttt{<model>\_<param\_key><val>\_seed<seed>}
+        (contoh: \texttt{mf\_components64\_seed42}).
+  \item \textbf{Experiment log:} setiap run dicatat ke \texttt{results/experiment\_log.csv}
+        oleh \texttt{src/experiment\_log.py} beserta timestamp, git commit hash, parameter, dan metrik.
+\end{itemize}
+
+%% ---- 8. HASIL AWAL (CP2) ----
+\section{Hasil Awal (CP2 --- Belum Dituning)}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Model} & \textbf{Recall@10} & \textbf{NDCG@10} \\
+\midrule
+Popularity           & 0.0135 & 0.0092 \\
+Matrix Factorization & 0.0131 & 0.0079 \\
+TF-IDF CBF           & 0.0126 & 0.0073 \\
+Hybrid               & \textbf{0.0146} & \textbf{0.0092} \\
+\bottomrule
+\end{tabular}
+\caption{Performa baseline awal pada validation warm (n\_components=32, alpha=0.5, max\_features=100k).}
+\end{table}
+
+Hybrid mengungguli semua model. Tuning pada W10--W12 difokuskan pada peningkatan terutama
+untuk pengguna kelompok Low yang memiliki riwayat interaksi terbatas.
+
+%% ---- 9. EVIDENCE ----
+\section{Evidence GitHub}
+
+File baru/diperbarui pada CP3:
+\begin{itemize}[leftmargin=*, nosep]
+  \item \texttt{src/config.py} --- konfigurasi dan search space terpusat
+  \item \texttt{src/experiment\_log.py} --- logging per run (run ID, timestamp, git commit, metrik)
+  \item \texttt{src/tune\_hyperparameters.py} --- skrip tuning otomatis via validation
+  \item \texttt{results/experiment\_matrix.csv} --- experiment matrix lengkap (E1--E5)
+  \item \texttt{src/mf\_baseline.py}, \texttt{src/tfidf\_cbf\_baseline.py}, \texttt{src/hybrid\_baseline.py}
+        --- diperbarui untuk membaca parameter dari \texttt{config.py}
+\end{itemize}
+
+\end{document}

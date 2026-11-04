@@ -12,6 +12,7 @@ from baseline_common import (
     RAW_DIR,
     RESULT_DIR,
 )
+from config import TFIDF_CONFIG, make_run_id
 
 
 # 1. Memuat data
@@ -65,13 +66,18 @@ items = (
 
 
 # 3. Membentuk representasi TF-IDF
+# Nilai max_features dibaca dari config.py (TFIDF_CONFIG).
+# Untuk tuning, ubah TFIDF_CONFIG["max_features"] di config.py
+# sesuai search space: [50000, 100000].
+run_id = make_run_id("tfidf_cbf", {"maxfeat": TFIDF_CONFIG["max_features"]})
+print(f"Run ID: {run_id}")
 print("Membangun representasi TF-IDF item...")
 
 vectorizer = TfidfVectorizer(
-    max_features=100000,
-    stop_words="english",
-    min_df=2,
-    ngram_range=(1, 2),
+    max_features=TFIDF_CONFIG["max_features"],
+    stop_words=TFIDF_CONFIG["stop_words"],
+    min_df=TFIDF_CONFIG["min_df"],
+    ngram_range=TFIDF_CONFIG["ngram_range"],
     dtype=np.float32,
 )
 

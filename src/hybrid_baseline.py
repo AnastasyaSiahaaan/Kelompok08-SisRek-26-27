@@ -14,6 +14,7 @@ from baseline_common import (
     RAW_DIR,
     RESULT_DIR,
 )
+from config import MF_CONFIG, TFIDF_CONFIG, HYBRID_CONFIG, make_run_id
 
 
 def main():
@@ -24,9 +25,13 @@ def main():
     train["user_id"] = train["user_id"].astype(str)
     train["item_id"] = train["item_id"].astype(str)
 
-    # Bobot awal Hybrid: MF 50%, CBF 50%
-    # Nilai awal CP2, belum dituning; akan dipilih ulang memakai validation sebelum freeze.
-    alpha = 0.5
+    # Bobot hybrid dibaca dari config.py (HYBRID_CONFIG).
+    # Untuk tuning, ubah HYBRID_CONFIG["alpha"] di config.py
+    # sesuai search space: [0.3, 0.5, 0.7].
+    alpha = HYBRID_CONFIG["alpha"]
+
+    run_id = make_run_id("hybrid", {"alpha": alpha})
+    print(f"Run ID: {run_id}")
 
     # 2. Membentuk model MF menggunakan data training
     user_ids = train["user_id"].drop_duplicates().tolist()
@@ -51,15 +56,15 @@ def main():
         shape=(len(user_ids), len(item_ids)),
     ).tocsr()
 
-    n_components = min(32, min(R.shape) - 1)
+    n_components = min(MF_CONFIG["n_components"], min(R.shape) - 1)
     if n_components < 2:
         raise ValueError("Data tidak cukup untuk MF/SVD.")
 
     print("Melatih model MF...")
     mf = TruncatedSVD(
         n_components=n_components,
-        n_iter=7,
-        random_state=42,
+        n_iter=MF_CONFIG["n_iter"],
+        random_state=MF_CONFIG["random_state"],
     )
     user_factors = mf.fit_transform(R)
     item_factors = mf.components_.T
@@ -82,10 +87,10 @@ def main():
     items = items.drop_duplicates("item_id").reset_index(drop=True)
 
     vectorizer = TfidfVectorizer(
-        max_features=100000,
-        stop_words="english",
-        min_df=2,
-        ngram_range=(1, 2),
+        max_features=TFIDF_CONFIG["max_features"],
+        stop_words=TFIDF_CONFIG["stop_words"],
+        min_df=TFIDF_CONFIG["min_df"],
+        ngram_range=TFIDF_CONFIG["ngram_range"],
         dtype=np.float32,
     )
     X = vectorizer.fit_transform(items["combined_text"])

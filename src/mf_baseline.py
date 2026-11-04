@@ -11,6 +11,7 @@ from baseline_common import (
     evaluate_rankings,
     RESULT_DIR,
 )
+from config import MF_CONFIG, make_run_id
 
 
 # 1. Memuat data
@@ -54,20 +55,24 @@ R = coo_matrix(
 
 
 # 4. Melatih Matrix Factorization dengan TruncatedSVD
-# Nilai awal CP2, belum dituning; akan dipilih ulang memakai validation sebelum freeze.
-n_components = min(32, min(R.shape) - 1)
+# Nilai n_components dibaca dari config.py (MF_CONFIG).
+# Untuk tuning, ubah MF_CONFIG["n_components"] di config.py
+# sesuai search space: [32, 64, 128].
+n_components = min(MF_CONFIG["n_components"], min(R.shape) - 1)
 
 if n_components < 2:
     raise ValueError(
         "Data tidak cukup untuk menjalankan MF/SVD."
     )
 
+run_id = make_run_id("mf", {"components": MF_CONFIG["n_components"]})
+print(f"Run ID: {run_id}")
 print("Melatih Matrix Factorization (TruncatedSVD)...")
 
 model = TruncatedSVD(
     n_components=n_components,
-    n_iter=7,
-    random_state=42,
+    n_iter=MF_CONFIG["n_iter"],
+    random_state=MF_CONFIG["random_state"],
 )
 
 user_factors = model.fit_transform(R)

@@ -1,0 +1,11 @@
+experiment_id,model_variant,description,hyperparameters,validation_metrics,analysis_purpose,status
+E1,Popularity,"Baseline popularitas — item diranking berdasarkan jumlah interaksi positif (rating>=4) pada training","positive_threshold=4 (tetap; tidak di-tuning)","Recall@10, NDCG@10","Baseline bersama; patokan minimum semua model",planned
+E2a,MF (n_components=32),"Matrix Factorization TruncatedSVD — skor = dot product faktor user dan item","n_components=32; n_iter=7; random_state=42","Recall@10, NDCG@10","Tuning: cari n_components optimal via validation",planned
+E2b,MF (n_components=64),"Matrix Factorization TruncatedSVD","n_components=64; n_iter=7; random_state=42","Recall@10, NDCG@10","Tuning MF",planned
+E2c,MF (n_components=128),"Matrix Factorization TruncatedSVD","n_components=128; n_iter=7; random_state=42","Recall@10, NDCG@10","Tuning MF",planned
+E3a,TF-IDF CBF (max_features=50000),"Content-Based Filtering — profil user dari rata-rata TF-IDF item positif; cosine similarity ke kandidat","max_features=50000; ngram_range=(1,2); min_df=2","Recall@10, NDCG@10","Tuning: cari max_features optimal via validation",planned
+E3b,TF-IDF CBF (max_features=100000),"Content-Based Filtering TF-IDF","max_features=100000; ngram_range=(1,2); min_df=2","Recall@10, NDCG@10","Tuning TF-IDF CBF",planned
+E4a,Hybrid (alpha=0.3),"Hybrid MF+CBF — min-max normalisasi per-user lalu alpha*MF + (1-alpha)*CBF","alpha=0.3; MF config terpilih dari E2; CBF config terpilih dari E3","Recall@10, NDCG@10","Tuning: cari bobot optimal via validation",planned
+E4b,Hybrid (alpha=0.5),"Hybrid MF+CBF","alpha=0.5; MF config terpilih dari E2; CBF config terpilih dari E3","Recall@10, NDCG@10","Tuning Hybrid",planned
+E4c,Hybrid (alpha=0.7),"Hybrid MF+CBF","alpha=0.7; MF config terpilih dari E2; CBF config terpilih dari E3","Recall@10, NDCG@10","Tuning Hybrid",planned
+E5,Track-A Analysis,"Analisis performa per kelompok aktivitas user (Low/Medium/High) — dijalankan pada semua model terpilih (E1/E2-best/E3-best/E4-best)","Menggunakan config terpilih dari E1-E4","Recall@10 & NDCG@10 per activity group","Menjawab RQ Track A: pengaruh riwayat interaksi terhadap performa",planned

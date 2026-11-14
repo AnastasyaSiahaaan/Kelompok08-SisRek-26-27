@@ -24,7 +24,7 @@ POPULARITY_CONFIG = {
 #   dipilih dari SEARCH SPACE_MF_FACTORS via validation sebelum freeze.
 # ---------------------------------------------------------------------------
 MF_CONFIG = {
-    "n_components": 64,        # nilai terpilih; lihat MF_SEARCH_SPACE
+    "n_components": 32,
     "n_iter": 7,
     "random_state": RANDOM_SEED,
     "positive_threshold": 4,

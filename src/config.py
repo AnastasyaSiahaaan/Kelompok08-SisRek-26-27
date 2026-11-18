@@ -81,6 +81,35 @@ EVAL_CONFIG = {
 # Penamaan run — format: <model>_<param_key><param_val>_seed<seed>
 # Contoh: mf_components64_seed42
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Item-kNN Baseline
+# shrinkage: regularisasi cosine similarity; dipilih dari {100, 300, 500}
+# ---------------------------------------------------------------------------
+ITEM_KNN_CONFIG = {
+    "shrinkage": 500,
+}
+
+# ---------------------------------------------------------------------------
+# Popularity Recency Baseline
+# window_days: jendela waktu dari max training timestamp; dipilih dari {90, 180, 365} hari
+# ---------------------------------------------------------------------------
+POP_RECENCY_CONFIG = {
+    "window_days": 180,
+}
+
+# ---------------------------------------------------------------------------
+# Hybrid Baru (kNN + CBF + Pop6M)
+# Bobot dipilih via grid search pada validation:
+#   grid: w_knn {0.3,0.4,0.5}, w_cbf {0.3,0.4,0.5}, w_pop {0.1,0.2,0.3}
+#   terbaik: (0.4, 0.4, 0.2) → NDCG@10=0.016582
+# ---------------------------------------------------------------------------
+HYBRID_NEW_CONFIG = {
+    "w_knn": 0.4,
+    "w_cbf": 0.4,
+    "w_pop6m": 0.2,
+}
+
+
 def make_run_id(model: str, params: dict, seed: int = RANDOM_SEED) -> str:
     """Membuat ID run yang unik dan dapat dilacak."""
     param_str = "_".join(

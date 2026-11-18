@@ -1,0 +1,73 @@
+comparison,model_a,model_b,group,metric,mean_a,mean_b,diff_mean,ci_low_95,ci_high_95,significant,n_users,n_bootstrap,seed
+Item-kNN vs Pop Recency,item_knn,popularity_recency,Overall,Recall@10,0.019885,0.021692,-0.001807,-0.004322,0.000627,Tidak,11659,1000,42
+Item-kNN vs Pop Recency,item_knn,popularity_recency,Overall,NDCG@10,0.013118,0.012917,0.000201,-0.001296,0.001629,Tidak,11659,1000,42
+Item-kNN vs Pop Recency,item_knn,popularity_recency,Overall,HitRate@10,0.040741,0.046059,-0.005318,-0.00978,-0.001029,Ya (-),11659,1000,42
+Item-kNN vs Pop Recency,item_knn,popularity_recency,Overall,MRR@10,0.01696,0.016184,0.000776,-0.001289,0.002751,Tidak,11659,1000,42
+Item-kNN vs Pop Recency,item_knn,popularity_recency,Low,Recall@10,0.019057,0.023815,-0.004758,-0.008364,-0.001257,Ya (-),6105,1000,42
+Item-kNN vs Pop Recency,item_knn,popularity_recency,Low,NDCG@10,0.012175,0.014637,-0.002462,-0.004738,-0.000316,Ya (-),6105,1000,42
+Item-kNN vs Pop Recency,item_knn,popularity_recency,Low,HitRate@10,0.039803,0.051597,-0.011794,-0.018018,-0.006224,Ya (-),6105,1000,42
+Item-kNN vs Pop Recency,item_knn,popularity_recency,Low,MRR@10,0.015178,0.018943,-0.003765,-0.006991,-0.000758,Ya (-),6105,1000,42
+Item-kNN vs Pop Recency,item_knn,popularity_recency,Medium,Recall@10,0.022423,0.021516,0.000907,-0.004564,0.007356,Tidak,2364,1000,42
+Item-kNN vs Pop Recency,item_knn,popularity_recency,Medium,NDCG@10,0.014429,0.011972,0.002457,-0.000844,0.005997,Tidak,2364,1000,42
+Item-kNN vs Pop Recency,item_knn,popularity_recency,Medium,HitRate@10,0.03934,0.038071,0.001269,-0.006345,0.010152,Tidak,2364,1000,42
+Item-kNN vs Pop Recency,item_knn,popularity_recency,Medium,MRR@10,0.016584,0.012674,0.003911,-0.000309,0.007957,Tidak,2364,1000,42
+Item-kNN vs Pop Recency,item_knn,popularity_recency,High,Recall@10,0.01959,0.01776,0.001829,-0.002429,0.006537,Tidak,3190,1000,42
+Item-kNN vs Pop Recency,item_knn,popularity_recency,High,NDCG@10,0.013952,0.010326,0.003626,0.001288,0.006063,Ya (+),3190,1000,42
+Item-kNN vs Pop Recency,item_knn,popularity_recency,High,HitRate@10,0.043574,0.041379,0.002194,-0.004702,0.009718,Tidak,3190,1000,42
+Item-kNN vs Pop Recency,item_knn,popularity_recency,High,MRR@10,0.020648,0.013505,0.007143,0.003798,0.010391,Ya (+),3190,1000,42
+Hybrid New vs Item-kNN,hybrid_new,item_knn,Overall,Recall@10,0.020883,0.019885,0.000998,-0.00147,0.00347,Tidak,11659,1000,42
+Hybrid New vs Item-kNN,hybrid_new,item_knn,Overall,NDCG@10,0.012311,0.013118,-0.000807,-0.002315,0.000652,Tidak,11659,1000,42
+Hybrid New vs Item-kNN,hybrid_new,item_knn,Overall,HitRate@10,0.040827,0.040741,8.6e-05,-0.00386,0.004031,Tidak,11659,1000,42
+Hybrid New vs Item-kNN,hybrid_new,item_knn,Overall,MRR@10,0.014401,0.01696,-0.002559,-0.00451,-0.000679,Ya (-),11659,1000,42
+Hybrid New vs Item-kNN,hybrid_new,item_knn,Low,Recall@10,0.0213,0.019057,0.002243,-0.001084,0.005702,Tidak,6105,1000,42
+Hybrid New vs Item-kNN,hybrid_new,item_knn,Low,NDCG@10,0.012452,0.012175,0.000277,-0.001653,0.002452,Tidak,6105,1000,42
+Hybrid New vs Item-kNN,hybrid_new,item_knn,Low,HitRate@10,0.043898,0.039803,0.004095,-0.00131,0.010324,Tidak,6105,1000,42
+Hybrid New vs Item-kNN,hybrid_new,item_knn,Low,MRR@10,0.014467,0.015178,-0.00071,-0.00338,0.002201,Tidak,6105,1000,42
+Hybrid New vs Item-kNN,hybrid_new,item_knn,Medium,Recall@10,0.023115,0.022423,0.000692,-0.0058,0.006748,Tidak,2364,1000,42
+Hybrid New vs Item-kNN,hybrid_new,item_knn,Medium,NDCG@10,0.01308,0.014429,-0.001349,-0.004966,0.001817,Tidak,2364,1000,42
+Hybrid New vs Item-kNN,hybrid_new,item_knn,Medium,HitRate@10,0.035533,0.03934,-0.003807,-0.012701,0.00423,Tidak,2364,1000,42
+Hybrid New vs Item-kNN,hybrid_new,item_knn,Medium,MRR@10,0.013349,0.016584,-0.003236,-0.007579,0.000681,Tidak,2364,1000,42
+Hybrid New vs Item-kNN,hybrid_new,item_knn,High,Recall@10,0.01843,0.01959,-0.001159,-0.005589,0.003172,Tidak,3190,1000,42
+Hybrid New vs Item-kNN,hybrid_new,item_knn,High,NDCG@10,0.011472,0.013952,-0.00248,-0.005034,0.00016,Tidak,3190,1000,42
+Hybrid New vs Item-kNN,hybrid_new,item_knn,High,HitRate@10,0.038871,0.043574,-0.004702,-0.011912,0.002821,Tidak,3190,1000,42
+Hybrid New vs Item-kNN,hybrid_new,item_knn,High,MRR@10,0.015053,0.020648,-0.005595,-0.009124,-0.001737,Ya (-),3190,1000,42
+Hybrid New vs Pop Recency,hybrid_new,popularity_recency,Overall,Recall@10,0.020883,0.021692,-0.000809,-0.003676,0.001802,Tidak,11659,1000,42
+Hybrid New vs Pop Recency,hybrid_new,popularity_recency,Overall,NDCG@10,0.012311,0.012917,-0.000606,-0.002138,0.000833,Tidak,11659,1000,42
+Hybrid New vs Pop Recency,hybrid_new,popularity_recency,Overall,HitRate@10,0.040827,0.046059,-0.005232,-0.009778,-0.001115,Ya (-),11659,1000,42
+Hybrid New vs Pop Recency,hybrid_new,popularity_recency,Overall,MRR@10,0.014401,0.016184,-0.001783,-0.003734,-7.7e-05,Ya (-),11659,1000,42
+Hybrid New vs Pop Recency,hybrid_new,popularity_recency,Low,Recall@10,0.0213,0.023815,-0.002515,-0.00608,0.001221,Tidak,6105,1000,42
+Hybrid New vs Pop Recency,hybrid_new,popularity_recency,Low,NDCG@10,0.012452,0.014637,-0.002185,-0.004281,-0.000161,Ya (-),6105,1000,42
+Hybrid New vs Pop Recency,hybrid_new,popularity_recency,Low,HitRate@10,0.043898,0.051597,-0.007699,-0.013595,-0.001474,Ya (-),6105,1000,42
+Hybrid New vs Pop Recency,hybrid_new,popularity_recency,Low,MRR@10,0.014467,0.018943,-0.004476,-0.007142,-0.001784,Ya (-),6105,1000,42
+Hybrid New vs Pop Recency,hybrid_new,popularity_recency,Medium,Recall@10,0.023115,0.021516,0.001599,-0.0052,0.008678,Tidak,2364,1000,42
+Hybrid New vs Pop Recency,hybrid_new,popularity_recency,Medium,NDCG@10,0.01308,0.011972,0.001108,-0.002618,0.004941,Tidak,2364,1000,42
+Hybrid New vs Pop Recency,hybrid_new,popularity_recency,Medium,HitRate@10,0.035533,0.038071,-0.002538,-0.011844,0.007191,Tidak,2364,1000,42
+Hybrid New vs Pop Recency,hybrid_new,popularity_recency,Medium,MRR@10,0.013349,0.012674,0.000675,-0.003903,0.004907,Tidak,2364,1000,42
+Hybrid New vs Pop Recency,hybrid_new,popularity_recency,High,Recall@10,0.01843,0.01776,0.00067,-0.003603,0.00573,Tidak,3190,1000,42
+Hybrid New vs Pop Recency,hybrid_new,popularity_recency,High,NDCG@10,0.011472,0.010326,0.001145,-0.001091,0.003754,Tidak,3190,1000,42
+Hybrid New vs Pop Recency,hybrid_new,popularity_recency,High,HitRate@10,0.038871,0.041379,-0.002508,-0.009726,0.005643,Tidak,3190,1000,42
+Hybrid New vs Pop Recency,hybrid_new,popularity_recency,High,MRR@10,0.015053,0.013505,0.001548,-0.001289,0.004798,Tidak,3190,1000,42
+Item-kNN (Best NDCG) vs Popularity Global,item_knn,popularity,Overall,Recall@10,0.019885,0.013499,0.006387,0.004527,0.008267,Ya (+),11659,1000,42
+Item-kNN (Best NDCG) vs Popularity Global,item_knn,popularity,Overall,NDCG@10,0.013118,0.009222,0.003896,0.002657,0.005128,Ya (+),11659,1000,42
+Item-kNN (Best NDCG) vs Popularity Global,item_knn,popularity,Low,Recall@10,0.019057,0.015547,0.00351,0.000941,0.006465,Ya (+),6105,1000,42
+Item-kNN (Best NDCG) vs Popularity Global,item_knn,popularity,Low,NDCG@10,0.012175,0.010707,0.001467,-0.000308,0.003337,Tidak,6105,1000,42
+Item-kNN (Best NDCG) vs Popularity Global,item_knn,popularity,Medium,Recall@10,0.022423,0.013287,0.009136,0.004722,0.014105,Ya (+),2364,1000,42
+Item-kNN (Best NDCG) vs Popularity Global,item_knn,popularity,Medium,NDCG@10,0.014429,0.008366,0.006063,0.003226,0.00902,Ya (+),2364,1000,42
+Item-kNN (Best NDCG) vs Popularity Global,item_knn,popularity,High,Recall@10,0.01959,0.009734,0.009855,0.006624,0.013413,Ya (+),3190,1000,42
+Item-kNN (Best NDCG) vs Popularity Global,item_knn,popularity,High,NDCG@10,0.013952,0.007014,0.006938,0.004946,0.008995,Ya (+),3190,1000,42
+Pop Recency (Best Recall) vs Popularity Global,popularity_recency,popularity,Overall,Recall@10,0.021692,0.013499,0.008193,0.006465,0.010061,Ya (+),11659,1000,42
+Pop Recency (Best Recall) vs Popularity Global,popularity_recency,popularity,Overall,NDCG@10,0.012917,0.009222,0.003695,0.002859,0.004593,Ya (+),11659,1000,42
+Pop Recency (Best Recall) vs Popularity Global,popularity_recency,popularity,Low,Recall@10,0.023815,0.015547,0.008267,0.005919,0.010964,Ya (+),6105,1000,42
+Pop Recency (Best Recall) vs Popularity Global,popularity_recency,popularity,Low,NDCG@10,0.014637,0.010707,0.00393,0.002674,0.005322,Ya (+),6105,1000,42
+Pop Recency (Best Recall) vs Popularity Global,popularity_recency,popularity,Medium,Recall@10,0.021516,0.013287,0.008229,0.00417,0.012541,Ya (+),2364,1000,42
+Pop Recency (Best Recall) vs Popularity Global,popularity_recency,popularity,Medium,NDCG@10,0.011972,0.008366,0.003606,0.001745,0.005517,Ya (+),2364,1000,42
+Pop Recency (Best Recall) vs Popularity Global,popularity_recency,popularity,High,Recall@10,0.01776,0.009734,0.008026,0.005021,0.011041,Ya (+),3190,1000,42
+Pop Recency (Best Recall) vs Popularity Global,popularity_recency,popularity,High,NDCG@10,0.010326,0.007014,0.003312,0.002014,0.004642,Ya (+),3190,1000,42
+Hybrid New vs Popularity Global,hybrid_new,popularity,Overall,Recall@10,0.020883,0.013499,0.007384,0.005001,0.009656,Ya (+),11659,1000,42
+Hybrid New vs Popularity Global,hybrid_new,popularity,Overall,NDCG@10,0.012311,0.009222,0.003089,0.001688,0.004538,Ya (+),11659,1000,42
+Hybrid New vs Popularity Global,hybrid_new,popularity,Low,Recall@10,0.0213,0.015547,0.005753,0.002885,0.009204,Ya (+),6105,1000,42
+Hybrid New vs Popularity Global,hybrid_new,popularity,Low,NDCG@10,0.012452,0.010707,0.001744,-0.000132,0.003971,Tidak,6105,1000,42
+Hybrid New vs Popularity Global,hybrid_new,popularity,Medium,Recall@10,0.023115,0.013287,0.009828,0.003779,0.015808,Ya (+),2364,1000,42
+Hybrid New vs Popularity Global,hybrid_new,popularity,Medium,NDCG@10,0.01308,0.008366,0.004714,0.001398,0.008383,Ya (+),2364,1000,42
+Hybrid New vs Popularity Global,hybrid_new,popularity,High,Recall@10,0.01843,0.009734,0.008696,0.004718,0.013003,Ya (+),3190,1000,42
+Hybrid New vs Popularity Global,hybrid_new,popularity,High,NDCG@10,0.011472,0.007014,0.004458,0.002158,0.007189,Ya (+),3190,1000,42

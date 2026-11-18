@@ -2,3 +2,16 @@
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+
+# Logs & temporary files
+*.log
+*.tmp
+task-*.log
+
+# Data protection (Track A: test set strictly forbidden)
+*test*.csv
+data/raw/*test*
+
+# System & OS
+.DS_Store
+Thumbs.db

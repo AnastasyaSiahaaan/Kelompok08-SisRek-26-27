@@ -154,7 +154,7 @@
 %% article.
 \begin{abstract}
 
-This study examines how user interaction history relates to recommendation performance across user activity groups. Using the Amazon Reviews 2023 Musical Instruments dataset with the provided temporal training and warm-validation split, we compare four recommendation approaches: a popularity baseline, a TruncatedSVD-based latent-factor model, TF-IDF content-based filtering, and a hybrid model combining the two latter approaches. Users are grouped by the number of training interactions into Low (1--5), Medium (6--8), and High (9 or more) activity groups. All approaches are evaluated using Recall@10 and NDCG@10 under a shared evaluation protocol. In the current experiments, the hybrid model achieves the highest overall Recall@10 (0.014567), while the popularity baseline achieves the highest overall NDCG@10 (0.009222). Group-level results show that performance varies with user activity and evaluation metric. These findings provide an empirical comparison of recommendation approaches under different levels of user interaction history. The results are limited to the current warm-validation setting and do not establish statistical significance.
+This study examines how user interaction history relates to recommendation performance across user activity groups. Using the Amazon Reviews 2023 Musical Instruments dataset with the provided temporal training and warm-validation split, we compare four recommendation approaches: a popularity baseline, a TruncatedSVD-based latent-factor model, TF-IDF content-based filtering, and a hybrid model combining the two latter approaches. Users are grouped by the number of training interactions into Low (1--5), Medium (6--8), and High (9 or more) activity groups. All approaches are evaluated using Recall@10 and NDCG@10 under a shared evaluation protocol. In the current experiments, the hybrid model achieves the highest overall Recall@10 (0.014496), while the popularity baseline achieves the highest overall NDCG@10 (0.009222). Group-level results show that performance varies with user activity and evaluation metric. These findings provide an empirical comparison of recommendation approaches under different levels of user interaction history. The results are limited to the current warm-validation setting and do not establish statistical significance.
 
 \end{abstract}
 
@@ -349,7 +349,7 @@ where $\mathrm{DCG@10}(u)=\sum_{k=1}^{10}\mathrm{rel}_k/\log_2(k+1)$ with binary
 The hybrid model combines independently min--max-normalized TruncatedSVD and TF-IDF content-based scores with initial equal weights of 0.5. The TruncatedSVD baseline uses up to 32 components, seven iterations, and random state 42. The TF-IDF representation uses up to 100,000 features, English stop-word removal, a minimum document frequency of two, and unigram and bigram features.
 
 \section{Results and Discussion}
-The warm-validation results show different performance patterns across the four recommendation approaches. The hybrid model achieves the highest overall Recall@10 of 0.014567, followed by popularity at 0.013499, TruncatedSVD at 0.013094, and TF-IDF content-based filtering at 0.012568. In terms of NDCG@10, popularity achieves the highest score of 0.009222, followed by the hybrid model at 0.009165, TruncatedSVD at 0.007917, and TF-IDF content-based filtering at 0.007304.
+The warm-validation results show different performance patterns across the four recommendation approaches. The hybrid model achieves the highest overall Recall@10 of 0.014496, followed by popularity at 0.013499, TruncatedSVD at 0.013094, and TF-IDF content-based filtering at 0.012525. In terms of NDCG@10, popularity achieves the highest score of 0.009222, followed by the hybrid model at 0.009134, TruncatedSVD at 0.007917, and TF-IDF content-based filtering at 0.007333.
 
 These results indicate that the model with the highest Recall@10 is not necessarily the model with the highest NDCG@10. The hybrid approach retrieves a larger proportion of relevant items within the top ten, whereas the popularity baseline achieves slightly better ranking quality according to NDCG@10. The observed difference is descriptive and has not been tested for statistical significance.
 
@@ -368,9 +368,9 @@ Performance also varies across user-activity groups. The hybrid approach achieve
 Model & Low & Medium & High & Range & Low & Medium & High & Range \\
 \midrule
 Popularity & \textbf{0.0155} & 0.0133 & 0.0097 & 0.0058 & \textbf{0.0107} & 0.0084 & 0.0070 & 0.0037 \\
-TruncatedSVD & 0.0125 & 0.0128 & \textbf{0.0144} & 0.0018 & 0.0074 & 0.0078 & 0.0090 & 0.0015 \\
-TF-IDF CBF & 0.0124 & 0.0149 & 0.0112 & 0.0037 & 0.0072 & 0.0091 & 0.0062 & 0.0030 \\
-Hybrid & 0.0137 & \textbf{0.0175} & 0.0141 & 0.0038 & 0.0082 & \textbf{0.0106} & \textbf{0.0099} & 0.0024 \\
+TruncatedSVD & 0.0125 & 0.0128 & \textbf{0.0144} & \textbf{0.0018} & 0.0074 & 0.0078 & 0.0090 & \textbf{0.0015} \\
+TF-IDF CBF & 0.0123 & 0.0149 & 0.0112 & 0.0037 & 0.0073 & 0.0091 & 0.0062 & 0.0030 \\
+Hybrid & 0.0136 & \textbf{0.0175} & 0.0140 & 0.0038 & 0.0082 & \textbf{0.0106} & \textbf{0.0098} & 0.0024 \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -378,77 +378,29 @@ Hybrid & 0.0137 & \textbf{0.0175} & 0.0141 & 0.0038 & 0.0082 & \textbf{0.0106} &
 The current findings are limited to the provided warm-validation setting. They do not establish that any approach will perform best on the reserved test set or in a deployed recommendation system. Final conclusions should be confirmed through the planned test evaluation after the experimental configuration is fixed.
 
 \section{Limitations / Responsible Recommendation Considerations}
-\paragraph{Template guidance (delete before submission).}
-Minimum target: \textbf{0.25 page}. Discuss limitations that affect validity or
-generalizability, such as using only one Amazon category, offline evaluation,
-the rating $\geq 4$ relevance convention, metadata quality, or track-specific
-trade-offs. Also discuss responsible-recommendation implications relevant to the
-track, such as popularity concentration, diversity, calibration, or reinforcing
-past preferences. ``Our laptop was slow'' is not a scientific limitation unless
-it materially changed the experimental design.
+Several limitations should be considered when interpreting these experimental results. First, our evaluation is conducted offline on a single e-commerce product category (Musical Instruments, 5-core subset). User interaction dynamics and text content may exhibit different characteristics in other domains or under denser interaction regimes. Second, candidate selection is restricted to the warm candidate protocol (22,753 items), and relevance is defined strictly by ratings of 4 or 5. Lower ratings (1 to 3) are treated as non-relevant rather than explicit negative feedback, reflecting common top-$ evaluation conventions while omitting penalty for undesirable recommendations. Third, the content-based component relies on textual metadata fields via bag-of-words and n-grams without incorporating semantic embeddings or item price attributes.
 
-\textit{Replace this guidance with your Limitations / Responsible Recommendation Considerations.}
+From a responsible recommendation perspective, the observed dominance of the popularity baseline among Low-activity users highlights a critical popularity concentration risk. In sparse settings, recommending globally popular items maximizes immediate accuracy metrics like Recall@10 and NDCG@10, but risks creating a feedback loop that reinforces head items while suppressing catalogue discovery and diversity. For Track A (User History Sparsity), mitigating this bias requires balancing collaborative signals with personalized content features, ensuring that users with minimal interaction history still receive varied and discovery-oriented suggestions rather than purely consensus-driven recommendations.
 
 \section{Conclusion}
-\paragraph{Template guidance (delete before submission).}
-Minimum target: \textbf{0.25 page}. In one or two compact paragraphs, restate the
-\section{Contribution}
+This study investigated the impact of user interaction history on recommendation quality across four distinct approaches—Popularity, TruncatedSVD collaborative filtering, TF-IDF content-based filtering, and a weighted Hybrid model—on the Amazon Reviews 2023 Musical Instruments dataset under a strict warm-validation protocol. Regarding RQ1, the empirical results demonstrate that user history length profoundly affects model performance: collaborative filtering improves consistently as user interactions increase (Recall@10 rises from 0.0125 for Low to 0.0144 for High activity), whereas the popularity baseline exhibits the opposite trend, declining from 0.0155 to 0.0097. Content-based filtering peaks in the Medium activity group, while the Hybrid approach successfully integrates both signals to achieve the highest overall Recall@10 (0.014496).
 
+Regarding RQ2, TruncatedSVD demonstrated the highest group-level consistency across activity tiers, exhibiting the narrowest performance range (0.0018 for Recall@10 and 0.0015 for NDCG@10). However, the Hybrid model offers the most robust trade-off between retrieval breadth and ranking precision across varying user interaction histories. Future work for final evaluation (W13) will freeze these optimal hyperparameter configurations and assess generalization on the unobserved test split.
+
+\section{AI Usage Declaration}
+Generative AI tools (specifically Google Gemini / Antigravity) were used for coding assistance, environment debugging, and technical editing of this report. Generative tools were not used to fabricate experimental data, results, or academic citations. All experimental code, logs, and evaluation metrics were generated deterministically by scripts in the project repository and verified by the authors.
+
+\section{Contribution}
 \textbf{Eunike Purba:} Implemented the centralized configuration module (\texttt{src/config.py}) defining all hyperparameter search spaces, default values, and random seed for reproducibility.
 
 \textbf{Anastasya Siahaan:} Updated the three baseline scripts (\texttt{src/mf\_baseline.py}, \texttt{src/tfidf\_cbf\_baseline.py}, \texttt{src/hybrid\_baseline.py}) to read parameters from \texttt{config.py}; prepared the experiment matrix (\texttt{results/experiment\_matrix.csv}) and the progress report (\texttt{CP/progress\_report\_cp3.md}); verified all baselines run correctly with the new configuration.
 
 \textbf{Yolanda Saragih:} Implemented the experiment logging utility (\texttt{src/experiment\_log.py}) that records each run's identifier, timestamp, git commit hash, parameters, and validation metrics to \texttt{results/experiment\_log.csv}.
 
-\textbf{Theresia Silaban:} Implemented the hyperparameter tuning script (\texttt{src/tune\_hyperparameters.py}), which evaluates all search-space configurations for MF, TF-IDF CBF, and Hybrid on the warm-validation set and reports the best configuration per model.er.
-
-\textit{Replace this guidance with your Conclusion.}
-
-\section{AI Usage Declaration}
-\paragraph{Template guidance (delete before submission).}
-Minimum target: about \textbf{0.10 page}. State factually whether and how
-generative AI tools were used, for example for brainstorming, language editing,
-coding assistance, debugging, or not at all. The authors remain responsible for
-originality, correctness, citations, analysis, code, and experimental results.
-
-\paragraph{Example wording (delete before submission).}
-\textit{Generative AI tools were used for language editing and debugging
-assistance. They were not used to fabricate experimental results or references.
-All AI-assisted outputs were reviewed and verified by the authors.}
-
-\textit{Replace this guidance with your AI Usage Declaration.}
-
-\section{Contribution}
-\paragraph{Template guidance (delete before submission).}
-Minimum target: about \textbf{0.15 page}. State the contribution of each group
-member using concrete roles such as data preparation, baseline implementation,
-track-specific method, experimentation, evaluation, visualization, literature
-review, manuscript drafting/revision, reproducibility, and presentation. Avoid
-``all members contributed equally'' unless it is accurate and individual roles
-can still be explained during Week 15 questioning.
-
-\paragraph{Example wording (delete before submission).}
-\textit{Student A: data preparation and MF implementation; Student B: CBF and
-visualization; Student C: track-specific experiment and evaluation; Student D:
-literature review, manuscript revision, and reproducibility checks.}
-
-\textit{Replace this guidance with the contribution statement for your group.}
-
-
-\paragraph{References guidance (delete before submission).}
-Minimum target: approximately \textbf{0.75 page}. For this course manuscript,
-aim for roughly \textbf{8--15 strong references}. Prefer peer-reviewed or
-authoritative scholarly sources and cite them because they support a claim.
-Avoid using blogs, Medium posts, random tutorials, or ChatGPT as scholarly
-references for algorithmic/scientific claims. Use BibTeX and include DOI when
-available. The Rosni Lumbantoruan examples cited in the Related Work guidance
-above are stored in \texttt{sample-base.bib}; delete any example citation you do
-not actually use in the final manuscript.
+\textbf{Theresia Silaban:} Implemented the hyperparameter tuning script (\texttt{src/tune\_hyperparameters.py}), which evaluates all search-space configurations for MF, TF-IDF CBF, and Hybrid on the warm-validation set and reports the best configuration per model.
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{sample-base}
 
 \end{document}
 \endinput
-%%
-%% End of file `sigconf.tex'.

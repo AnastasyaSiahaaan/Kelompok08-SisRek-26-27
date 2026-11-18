@@ -141,8 +141,8 @@ def tune_mf(train, validation, users, candidates, activity):
         results.append((n_comp, overall["Recall@10"], overall["NDCG@10"]))
         print(f"  Recall@10={overall['Recall@10']:.4f}  NDCG@10={overall['NDCG@10']:.4f}")
 
-    best = max(results, key=lambda x: x[1])
-    print(f"\n  >> MF terbaik: n_components={best[0]}  Recall@10={best[1]:.4f}")
+    best = max(results, key=lambda x: x[2])  # dipilih berdasarkan NDCG@10 validation
+    print(f"\n  >> MF terbaik: n_components={best[0]}  NDCG@10={best[2]:.4f}  Recall@10={best[1]:.4f}")
     return best[0]
 
 

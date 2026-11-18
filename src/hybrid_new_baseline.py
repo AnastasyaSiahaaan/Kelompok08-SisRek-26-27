@@ -1,8 +1,9 @@
 """
 Hybrid Baru — 3-Way Fusion: Item-kNN + TF-IDF CBF + Popularity Recency (6M).
 
-Kombinasi bobot (w_knn, w_cbf, w_pop6m) dipilih dari validasi:
-    terbaik: w_knn=0.4, w_cbf=0.4, w_pop6m=0.2  → NDCG@10=0.016582
+Kombinasi bobot (w_knn, w_cbf, w_pop6m) dievaluasi pada validasi:
+    konfigurasi terpilih: w_knn=0.4, w_cbf=0.4, w_pop6m=0.2  → NDCG@10=0.012311, Recall@10=0.020883
+    (Klaim 0.016582 pada catatan awal tidak dapat direproduksi di grid resmi).
 Normalisasi: minmax per-user untuk kNN dan CBF; global minmax untuk Pop6M.
 
 Implementasi hemat memori untuk kNN: tidak pernah materialize S penuh.

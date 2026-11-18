@@ -55,7 +55,7 @@ HYBRID_CONFIG = {
 # Search space — dipakai untuk tuning via validation (BUKAN test set)
 # ---------------------------------------------------------------------------
 MF_SEARCH_SPACE = {
-    "n_components": [32, 64, 128],
+    "n_components": [8, 16, 32, 64],  # optimum terpilih: 32 (NDCG@10=0.007917)
 }
 
 TFIDF_SEARCH_SPACE = {
@@ -64,6 +64,20 @@ TFIDF_SEARCH_SPACE = {
 
 HYBRID_SEARCH_SPACE = {
     "alpha": [0.3, 0.5, 0.7],
+}
+
+ITEM_KNN_SEARCH_SPACE = {
+    "shrinkage": [100, 300, 500, 1000, 2000],  # optimum NDCG: 2000 (0.013173), Recall: 500 (0.019885)
+}
+
+POP_RECENCY_SEARCH_SPACE = {
+    "window_days": [90, 180, 365],  # optimum terpilih: 180 (NDCG@10=0.012917, Recall@10=0.021692)
+}
+
+HYBRID_NEW_SEARCH_SPACE = {
+    "w_knn": [0.3, 0.4, 0.5],
+    "w_cbf": [0.3, 0.4, 0.5],
+    "w_pop6m": [0.1, 0.2, 0.3],
 }
 
 # ---------------------------------------------------------------------------
@@ -99,9 +113,11 @@ POP_RECENCY_CONFIG = {
 
 # ---------------------------------------------------------------------------
 # Hybrid Baru (kNN + CBF + Pop6M)
-# Bobot dipilih via grid search pada validation:
-#   grid: w_knn {0.3,0.4,0.5}, w_cbf {0.3,0.4,0.5}, w_pop {0.1,0.2,0.3}
-#   terbaik: (0.4, 0.4, 0.2) → NDCG@10=0.016582
+# Bobot dievaluasi via grid search (27 kombinasi) pada validation:
+#   grid: w_knn {0.3,0.4,0.5}, w_cbf {0.3,0.4,0.5}, w_pop6m {0.1,0.2,0.3}
+#   konfigurasi terpilih: (0.4, 0.4, 0.2) → NDCG@10=0.012311, Recall@10=0.020883
+#   (Catatan: klaim 0.016582 pada versi sebelumnya tidak dapat direproduksi di grid
+#    resmi; kemungkinan berasal dari metrik MRR@10 atau evaluasi subset pengguna).
 # ---------------------------------------------------------------------------
 HYBRID_NEW_CONFIG = {
     "w_knn": 0.4,

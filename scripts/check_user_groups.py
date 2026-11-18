@@ -1,10 +1,11 @@
 
+import sys
 from pathlib import Path
 import pandas as pd
 
-from baseline_common import make_user_groups
-
 BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BASE_DIR / "src"))
+from baseline_common import make_user_groups
 SUPPORT_DIR = BASE_DIR / "data" / "supporting"
 
 activity = pd.read_csv(

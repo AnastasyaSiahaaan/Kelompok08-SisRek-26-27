@@ -175,6 +175,13 @@ def evaluate_rankings(
         # NDCG@10
         ndcg = dcg / idcg if idcg > 0 else 0.0
 
+        # HitRate@10
+        hit_rate = 1.0 if sum(hits) > 0 else 0.0
+
+        # MRR@10
+        first_hit = next((i + 1 for i, h in enumerate(hits) if h == 1), 0)
+        mrr = 1.0 / first_hit if first_hit > 0 else 0.0
+
         rows.append({
             "user_id": user_id,
             "activity_group": str(
@@ -182,6 +189,8 @@ def evaluate_rankings(
             ),
             "Recall@10": recall,
             "NDCG@10": ndcg,
+            "HitRate@10": hit_rate,
+            "MRR@10": mrr,
         })
 
     user_metrics = pd.DataFrame(rows)
@@ -198,8 +207,9 @@ def evaluate_rankings(
         return
 
     # Metrik keseluruhan: rata-rata per pengguna.
+    metric_cols = [c for c in ["Recall@10", "NDCG@10", "HitRate@10", "MRR@10"] if c in user_metrics.columns]
     overall = (
-        user_metrics[["Recall@10", "NDCG@10"]]
+        user_metrics[metric_cols]
         .mean()
         .to_frame()
         .T
@@ -214,6 +224,8 @@ def evaluate_rankings(
             users=("user_id", "nunique"),
             Recall_at_10=("Recall@10", "mean"),
             NDCG_at_10=("NDCG@10", "mean"),
+            HitRate_at_10=("HitRate@10", "mean"),
+            MRR_at_10=("MRR@10", "mean"),
         )
     )
 

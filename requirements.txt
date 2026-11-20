@@ -1,8 +1,8 @@
-pandas
-numpy
-scikit-learn
-scipy
-matplotlib
-seaborn
-jupyter
-reportlab
+pandas==3.0.0
+numpy==2.4.2
+scikit-learn==1.8.0
+scipy==1.17.0
+matplotlib==3.10.8
+seaborn==0.13.2
+reportlab==5.1.0
+pytest==9.2.0

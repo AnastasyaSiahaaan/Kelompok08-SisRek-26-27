@@ -1,5 +1,5 @@
-group,n_relevant_items,n_unique_users,avg_relevant_pop,median_relevant_pop,ci_lo_avg_pop_95,ci_hi_avg_pop_95,pct_in_top100,avg_top100_masked_per_user
-Overall,24202,11659,76.9466,18.0,74.4863,79.4808,6.9,1.0007
-Low,12611,6105,83.2538,19.0,79.5631,87.0323,7.46,0.5425
-Medium,4146,2364,75.8852,19.0,70.1618,81.8319,7.14,0.899
-High,7445,3190,66.854,17.0,63.0248,70.9009,5.83,1.8464
+group,n_users_with_relevant,avg_relevant_pop_per_user,median_relevant_pop_per_user,ci_lo_avg_pop_95,ci_hi_avg_pop_95,avg_pct_relevant_in_top100,avg_popularity_top10_popularity_model,ci_note
+Overall,11659,72.9236,25.0,70.1671,75.7814,6.54,1232.0088,CI dihitung bootstrap 10000 resampling per USER (bukan per item).
+Low,6105,77.1948,26.0,73.2542,81.221,6.82,1238.5394,CI dihitung bootstrap 10000 resampling per USER (bukan per item).
+Medium,2364,73.4533,23.0,66.9431,80.4723,6.91,1233.059,CI dihitung bootstrap 10000 resampling per USER (bukan per item).
+High,3190,64.357,24.0,59.9831,69.0171,5.72,1218.7324,CI dihitung bootstrap 10000 resampling per USER (bukan per item).

@@ -1,141 +1,281 @@
-# GABIN — Recommender System Project
+# GABIN -- Recommender System Project (Track A)
 
-**Working Title:** The Impact of User Interaction History on Collaborative, Content-Based, and Hybrid Recommendation Performance
+**Judul:** The Impact of User Interaction History on Collaborative,
+Content-Based, and Hybrid Recommendation Performance
 
-**Course:** 12S4054 Sistem Rekomendasi, Institut Teknologi Del
-**Group:** G08
+**Mata kuliah:** 12S4054 Sistem Rekomendasi, Institut Teknologi Del
+**Kelompok:** G08  |  **Semester:** Gasal 2026/2027
 
-## 1. Overview
+---
 
-This project studies how the amount of user interaction history affects recommendation quality on the Amazon Reviews 2023 dataset (Musical Instruments, 5-core, absolute-timestamp split).
+## 1. Pertanyaan Riset
+
+Bagaimana jumlah interaksi training seorang user memengaruhi performa
+rekomendasi berbasis collaborative filtering, content-based, dan hybrid?
 
 **Track A: User History Sparsity.**
 
-**Research question:** How does the number of interactions a user has affect the performance of collaborative, content-based, and hybrid recommendation?
-
-Models compared: Popularity (baseline), Matrix Factorization (collaborative), TF-IDF CBF (content-based), and Hybrid (MF + CBF).
+---
 
 ## 2. Dataset
 
-| Dataset | Records |
+Sumber: Amazon Reviews 2023 -- Musical Instruments, 5-core,
+absolute-timestamp split (<https://amazon-reviews-2023.github.io/>).
+
+| Subset | Jumlah interaksi |
 |---|---:|
-| Training interactions | 427,957 |
-| Full validation interactions | 41,284 |
-| Warm validation interactions | 30,360 |
-| Test interactions | 42,595 |
-| Candidate items (warm) | 22,753 |
-| Evaluable users (warm validation) | 11,659 |
+| Training | 427 957 |
+| Validation (full) | 41 284 |
+| Validation (warm) | 30 360 |
+| Test | 42 595 (tidak digunakan sebelum FinalTest) |
+| Candidate items (warm) | 22 753 |
+| Evaluable users (warm validation) | 11 659 |
 
-The train/validation/test split is provided by the course and is used as given. It is never reshuffled. The test set is not included in this repository and is not read by any script.
+Split disediakan panitia dan digunakan apa adanya; tidak di-reshuffle.
+Test set tidak ada di repositori ini.
 
-Source: Amazon Reviews 2023 (https://amazon-reviews-2023.github.io/).
+---
 
-## 3. Evaluation Protocol
+## 3. Metode
 
-- Relevant item: validation rating >= 4.
-- Evaluated users: the users in `evaluable_users_validation_warm.csv`.
-- Candidate set: all items in `candidate_items_warm.csv`, identical for every model.
-- Items a user interacted with in training are excluded from that user's recommendations.
-- Each user receives a top-10 list.
-- Metrics: **Recall@10** and **NDCG@10**, reported overall and per activity group.
-- Model and hyperparameter selection uses validation only. The test set is never used for tuning.
-
-## 4. User Activity Groups
-
-Groups are defined from each evaluable user's number of training interactions, using fixed bins (`pd.cut`, bins `[0, 5, 8, inf]`).
-
-| Group | Training interactions |
+| Model | Deskripsi singkat |
 |---|---|
-| Low | 1–5 |
-| Medium | 6–8 |
-| High | 9 or more |
+| **Popularity** | Item diranking berdasarkan jumlah interaksi positif (rating >= 4) di training |
+| **MF** | TruncatedSVD pada matriks user-item training; skor = dot product faktor user dan item |
+| **TF-IDF CBF** | Profil user dari rata-rata TF-IDF item positif di training; skor = cosine similarity ke kandidat |
+| **Hybrid** | alpha * norm_MF + (1-alpha) * norm_CBF; normalisasi min-max per-user; alpha=0.5 |
 
-Users with the same number of interactions always belong to the same group. The definition lives in `make_user_groups` in `src/baseline_common.py`.
+Semua model mengeluarkan item yang ada di training user sebelum memilih Top-10.
 
-## 5. Methods
+---
 
-**Popularity.** Candidate items are ranked by the number of positive training interactions (rating >= 4). Ties are ordered by item ID.
+## 4. Protokol Evaluasi
 
-**Matrix Factorization.** TruncatedSVD on the training user-item matrix. A candidate's score is the product of user and item latent factors.
+- Metrik utama: **Recall@10** dan **NDCG@10** (rata-rata per user).
+- Metrik tambahan: HitRate@10, MRR@10.
+- Item relevan: rating validation >= 4.
+- Candidate set: `data/raw/candidate_items_warm.csv` (sama untuk semua model).
+- Hyperparameter dan model selection: hanya menggunakan validation.
+  Test set tidak digunakan sebelum FinalTest.
 
-**TF-IDF CBF.** Items are represented by TF-IDF vectors of their metadata text (title, categories, features, description). A user profile is built only from the user's positively rated training items. Candidates are scored by cosine similarity. `average_rating` and `rating_number` are not used.
+**Catatan khusus (reprodusibilitas):**
+HitRate@10 dan MRR@10 untuk model Hybrid dihitung dari
+`results/hybrid_recommendations_top10.csv` via `src/add_hitrate_mrr.py`,
+bukan dari re-run penuh, karena metrik tersebut ditambahkan setelah
+run asli. Recall@10 dan NDCG@10 Hybrid diverifikasi bit-identik.
 
-**Hybrid.** Weighted combination of MF and CBF scores after per-user min-max normalization.
+---
 
-For all models, seen items are masked before the top 10 are selected. Hyperparameters (number of latent factors, hybrid weight, random seed) are defined at the top of `src/mf_baseline.py` and `src/hybrid_baseline.py`.
+## 5. Kelompok Aktivitas
 
-## 6. Project Structure
+Dibagi berdasarkan jumlah interaksi training per user (fixed bins):
 
-```text
+| Kelompok | Interaksi training | n users | % |
+|---|---|---|---|
+| Low | 1 -- 5 | 6 105 | 52.4% |
+| Medium | 6 -- 8 | 2 364 | 20.3% |
+| High | >= 9 | 3 190 | 27.4% |
+
+Implementasi: `src/baseline_common.make_user_groups()`.
+
+---
+
+## 6. Struktur Repositori
+
+```
 Kelompok08-SisRek-26-27/
-├── CP/                          # checkpoint documents
-├── data/
-│   ├── raw/                     # interactions_train/validation, candidate_items_warm, items
-│   ├── processed/
-│   └── supporting/              # warm/cold validation, evaluable users, activity files
-├── src/
-│   ├── baseline_common.py       # shared loading, user groups, metrics, evaluation
-│   ├── popularity_baseline.py
-│   ├── mf_baseline.py
-│   ├── tfidf_cbf_baseline.py
-│   ├── hybrid_baseline.py
-│   ├── evaluate_popularity.py
-│   ├── evaluate_popularity_by_group.py
-│   ├── compare_results.py
-│   ├── dataset_statistics.py
-│   ├── check_*.py               # output and protocol checks
-│   └── inspect_*.py             # data inspection
-├── results/                     # generated outputs (do not edit manually)
-├── requirements.txt
-└── README.md
+|-- CP/                          # Checkpoint documents (PDF, Markdown)
+|-- data/
+|   |-- raw/                     # interactions_train, validation, items, candidates
+|   |-- processed/               # README.txt
+|   `-- supporting/              # warm validation, evaluable users, activity files
+|-- docs/
+|   |-- EXPERIMENT_MATRIX.md     # daftar semua run eksperimen
+|   |-- FREEZE_CONFIG.md         # keputusan pra-FinalTest
+|   `-- LEAKAGE_CHECKLIST.md     # checklist leakage
+|-- results/                     # output eksperimen (jangan edit manual)
+|   |-- archive/                 # user_metrics lama (sebelum HitRate/MRR ditambah)
+|   |-- track_a_table_final.csv  # tabel utama Track A
+|   |-- track_a_bootstrap_ci.csv # CI paired lengkap
+|   |-- track_a_diff_of_diff.csv # selisih-dari-selisih
+|   |-- track_a_regression.csv   # regresi tren kontinu
+|   |-- track_a_sensitivity.csv  # sensitivitas batas kelompok
+|   |-- track_a_ndcg_bar.png     # figure utama
+|   `-- experiment_log.csv       # log semua run
+|-- scripts/                     # utilitas diagnostik (bukan pipeline utama)
+|   |-- check_*.py               # cek validitas output
+|   |-- inspect_*.py             # inspeksi data
+|   |-- evaluate_popularity*.py  # evaluasi popularity mandiri
+|   `-- generate_progress_report.py
+|-- src/                         # kode pipeline utama
+|   |-- baseline_common.py       # load_data, make_user_groups, evaluate_rankings
+|   |-- config.py                # semua hyperparameter dan search space
+|   |-- experiment_log.py        # logging run ke experiment_log.csv
+|   |-- popularity_baseline.py
+|   |-- popularity_recency_baseline.py
+|   |-- mf_baseline.py
+|   |-- tfidf_cbf_baseline.py
+|   |-- item_knn_baseline.py
+|   |-- hybrid_baseline.py
+|   |-- hybrid_new_baseline.py
+|   |-- tune_hyperparameters.py  # tuning MF/TF-IDF/Hybrid via validation
+|   |-- compare_results.py
+|   |-- bootstrap_ci.py          # CI untuk model appendix (kNN, Pop Recency, Hybrid New)
+|   |-- dataset_statistics.py
+|   |-- track_a_analysis.py      # analisis Track A utama (bootstrap, CI, overlap)
+|   |-- track_a_final.py         # analisis tambahan (regresi, kuintil, CI per user)
+|   `-- add_hitrate_mrr.py       # tambahkan HitRate/MRR dari recs yang sudah ada
+|-- tests/
+|   `-- test_metrics.py          # 6 unit test (Recall, NDCG, HitRate, MRR, groups, pipeline)
+|-- requirements.txt             # versi library di-pin
+`-- README.md
 ```
 
-## 7. Environment Setup
+---
 
-Run from the project root (Windows, VS Code terminal).
+## 7. Setup Environment
 
 ```powershell
-.\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 ```
 
-## 8. Running the Experiments
+Versi yang diuji: Python 3.13.7 pada Windows.
 
-Run in this order:
+Jalankan unit test untuk memverifikasi instalasi:
+
+```powershell
+python -m unittest discover tests -v
+```
+
+---
+
+## 8. Urutan Eksekusi -- dari Nol sampai Tabel Utama
+
+Semua perintah dijalankan dari root proyek.
+**Random seed 42** digunakan di semua model yang membutuhkan randomness
+(dikodekan di `src/config.py`, `RANDOM_SEED = 42`).
+
+### 8a. Statistik dataset (opsional)
 
 ```powershell
 python src/dataset_statistics.py
+```
+
+### 8b. Jalankan 4 model inti
+
+```powershell
 python src/popularity_baseline.py
-python src/evaluate_popularity.py
-python src/evaluate_popularity_by_group.py
 python src/mf_baseline.py
 python src/tfidf_cbf_baseline.py
 python src/hybrid_baseline.py
+```
+
+### 8c. Tambahkan HitRate/MRR untuk Hybrid (dan model lain yang perlu)
+
+```powershell
+python src/add_hitrate_mrr.py
+```
+
+### 8d. Bandingkan hasil
+
+```powershell
 python src/compare_results.py
 ```
 
-Validation checks:
+### 8e. Analisis Track A (tabel, CI, overlap, selisih-dari-selisih)
 
 ```powershell
-python src/check_recommendations.py
-python src/check_popularity.py
-python src/check_evaluation.py
-python src/check_user_groups.py
+python src/track_a_analysis.py
 ```
 
-## 9. Outputs
+### 8f. Analisis tambahan (regresi, kuintil, CI per user, figure)
 
-All outputs are written to `results/` and are generated by the scripts, not edited manually.
+```powershell
+python src/track_a_final.py
+```
 
-| File | Content |
+### 8g. Regenerasi tabel utama dan figure dalam satu perintah
+
+```powershell
+python src/track_a_analysis.py; python src/track_a_final.py
+```
+
+Output utama:
+- `results/track_a_table_final.csv` -- tabel 4 model x 4 kelompok x 4 metrik
+- `results/track_a_ndcg_bar.png`   -- figure NDCG@10 dengan error bar CI
+
+### 8h. Model appendix (opsional)
+
+```powershell
+python src/popularity_recency_baseline.py
+python src/item_knn_baseline.py
+python src/hybrid_new_baseline.py
+python src/bootstrap_ci.py
+```
+
+### 8i. Tuning hyperparameter (sudah dilakukan, hasilnya di experiment_log.csv)
+
+```powershell
+python src/tune_hyperparameters.py
+```
+
+---
+
+## 9. Output Utama
+
+| File | Isi |
 |---|---|
-| `comparison_overall.csv` | Recall@10 and NDCG@10 per model |
-| `comparison_by_activity_group.csv` | Metrics per model and activity group |
-| `*_overall_metrics.csv`, `*_by_activity_group.csv` | Per-model metrics |
-| `*_recommendations_top10.csv` | Top-10 recommendations per user |
-| `*_user_metrics.csv` | Per-user metrics |
-| `dataset_statistics.csv`, `rating_distribution.csv`, `user_activity_distribution.csv` | Training data statistics |
+| `results/track_a_table_final.csv` | Recall/NDCG/HitRate/MRR per model per kelompok; * = terbaik per kolom |
+| `results/track_a_bootstrap_ci.csv` | CI paired 95%/99.29% semua perbandingan |
+| `results/track_a_diff_of_diff.csv` | DoD Hybrid-Popularity (High-Low) + CI |
+| `results/track_a_regression.csv` | Regresi delta(NDCG) ~ log(interactions) + CI kemiringan |
+| `results/track_a_sensitivity.csv` | NDCG per tertil/kuintil + DoD |
+| `results/track_a_relevant_pop.csv` | Popularitas item relevan per kelompok (CI per user) |
+| `results/track_a_ndcg_bar.png` | Bar chart NDCG@10 dengan error bar CI 95% |
+| `results/experiment_log.csv` | Log semua run (timestamp, git commit, params, metrik) |
+| `results/comparison_overall.csv` | Perbandingan ringkasan semua model |
 
-## 10. Output Validation
+---
 
-The check scripts verify that recommendation lists have no duplicates, each evaluated user receives exactly 10 items, all recommended items are in the candidate set, and no item seen in training is recommended. Rerun them whenever recommendation-generation code changes.
+## 10. Validasi Output
+
+```powershell
+python scripts/check_recommendations.py   # duplikat, seen items, jumlah reks
+python scripts/check_popularity.py        # cakupan kandidat di ranking
+python scripts/check_evaluation.py        # protokol evaluasi
+python scripts/check_user_groups.py       # distribusi kelompok
+```
+
+---
+
+## 11. Unit Test
+
+```powershell
+python -m unittest discover tests -v
+# Ran 6 tests in ~0.06s -- OK
+```
+
+Test mencakup: Recall@10, NDCG@10, HitRate@10, MRR@10, user group definitions,
+seen-item exclusion dalam pipeline evaluasi.
+
+---
+
+## 12. Experiment Log
+
+Setiap run model dicatat ke `results/experiment_log.csv` oleh `src/experiment_log.py`.
+Format: run_id, timestamp, git_commit, model, params, recall_at_10, ndcg_at_10,
+metrik per kelompok, n_evaluated_users, notes.
+
+Semua percobaan tuning (MF n_components, TF-IDF max_features, Hybrid alpha,
+Item-kNN shrinkage, Pop Recency window_days, Hybrid New 3-way grid) tercatat di file ini.
+
+---
+
+## 13. Keputusan Pra-FinalTest
+
+Lihat `docs/FREEZE_CONFIG.md` untuk:
+- Hyperparameter final yang di-freeze
+- Definisi skema pengelompokan (skema utama vs sensitivitas)
+- Daftar 7 uji konfirmatori dengan Bonferroni k=7
+- Catatan bahwa C7 (DoD) adalah eksploratori di validation dan
+  baru konfirmatori di FinalTest

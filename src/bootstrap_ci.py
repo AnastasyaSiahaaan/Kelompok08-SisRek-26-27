@@ -38,15 +38,12 @@ GROUPS = ["Overall", "Low", "Medium", "High"]
 
 
 def load_user_metrics(model_name: str) -> pd.DataFrame:
+    # popularity_user_metrics.csv sekarang sudah lengkap (ada HitRate/MRR).
+    # Fallback ke popularity_validation_user_metrics.csv dihapus karena
+    # file utama sudah diperbarui oleh src/add_hitrate_mrr.py dan re-run baseline.
     path = RESULT_DIR / f"{model_name}_user_metrics.csv"
     if not path.exists():
-        # Fallback check for popularity_validation_user_metrics if needed
-        if model_name == "popularity":
-            alt_path = RESULT_DIR / "popularity_validation_user_metrics.csv"
-            if alt_path.exists():
-                path = alt_path
-        if not path.exists():
-            raise FileNotFoundError(f"File tidak ditemukan: {path}")
+        raise FileNotFoundError(f"File tidak ditemukan: {path}")
     df = pd.read_csv(path, dtype={"user_id": str})
     return df.set_index("user_id")
 

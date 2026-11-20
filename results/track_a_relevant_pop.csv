@@ -1,0 +1,5 @@
+group,n_relevant_items,n_unique_users,avg_relevant_pop,pct_in_top100
+Overall,24202,11659,76.9466,6.9
+Low,12611,6105,83.2538,7.46
+Medium,4146,2364,75.8852,7.14
+High,7445,3190,66.854,5.83

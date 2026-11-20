@@ -1,5 +1,5 @@
 group,n_users,avg_overlap_hybrid_mf,avg_overlap_hybrid_tfidf,note
-Overall,11659,0.2278,0.7647,Eksploratori. Hipotesis: overlap tinggi dengan TF-IDF menunjukkan skor CBF lebih sering menentukan ranking akhir pada alpha=0.5. Perlu uji lanjut dengan variasi alpha.
-Low,6105,0.2867,0.7082,Eksploratori. Hipotesis: overlap tinggi dengan TF-IDF menunjukkan skor CBF lebih sering menentukan ranking akhir pada alpha=0.5. Perlu uji lanjut dengan variasi alpha.
-Medium,2364,0.1982,0.796,Eksploratori. Hipotesis: overlap tinggi dengan TF-IDF menunjukkan skor CBF lebih sering menentukan ranking akhir pada alpha=0.5. Perlu uji lanjut dengan variasi alpha.
-High,3190,0.1372,0.8499,Eksploratori. Hipotesis: overlap tinggi dengan TF-IDF menunjukkan skor CBF lebih sering menentukan ranking akhir pada alpha=0.5. Perlu uji lanjut dengan variasi alpha.
+Overall,11659,0.2278,0.7647,Eksploratori. Hipotesis: overlap tinggi dengan TF-IDF menunjukkan skor CBF lebih sering menentukan ranking akhir pada alpha=0.5.
+Low,6105,0.2867,0.7082,Eksploratori. Hipotesis: overlap tinggi dengan TF-IDF menunjukkan skor CBF lebih sering menentukan ranking akhir pada alpha=0.5.
+Medium,2364,0.1982,0.796,Eksploratori. Hipotesis: overlap tinggi dengan TF-IDF menunjukkan skor CBF lebih sering menentukan ranking akhir pada alpha=0.5.
+High,3190,0.1372,0.8499,Eksploratori. Hipotesis: overlap tinggi dengan TF-IDF menunjukkan skor CBF lebih sering menentukan ranking akhir pada alpha=0.5.

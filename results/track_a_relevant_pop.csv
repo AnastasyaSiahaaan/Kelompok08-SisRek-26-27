@@ -1,5 +1,5 @@
-group,n_relevant_items,n_unique_users,avg_relevant_pop,pct_in_top100
-Overall,24202,11659,76.9466,6.9
-Low,12611,6105,83.2538,7.46
-Medium,4146,2364,75.8852,7.14
-High,7445,3190,66.854,5.83
+group,n_relevant_items,n_unique_users,avg_relevant_pop,median_relevant_pop,ci_lo_avg_pop_95,ci_hi_avg_pop_95,pct_in_top100,avg_top100_masked_per_user
+Overall,24202,11659,76.9466,18.0,74.4863,79.4808,6.9,1.0007
+Low,12611,6105,83.2538,19.0,79.5631,87.0323,7.46,0.5425
+Medium,4146,2364,75.8852,19.0,70.1618,81.8319,7.14,0.899
+High,7445,3190,66.854,17.0,63.0248,70.9009,5.83,1.8464

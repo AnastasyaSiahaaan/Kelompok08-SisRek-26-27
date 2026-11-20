@@ -63,6 +63,74 @@ def make_user_groups(activity):
     return activity
 
 
+def recompute_from_user_metrics(model_name, result_dir=None):
+    """
+    Hitung ulang _overall_metrics.csv dan _by_activity_group.csv dari
+    _user_metrics.csv sebagai satu-satunya sumber kebenaran.
+
+    Gunakan fungsi ini untuk memastikan konsistensi antara file ringkasan
+    dan data per-user.
+
+    Parameters
+    ----------
+    model_name : str
+        Nama model; akan membaca ``{model_name}_user_metrics.csv``.
+    result_dir : Path, optional
+        Direktori hasil; default RESULT_DIR.
+
+    Returns
+    -------
+    overall_dict : dict
+        {"Recall@10": float, "NDCG@10": float, ...} (micro-average)
+    group_dict : dict
+        {"Low": {...}, "Medium": {...}, "High": {...}}
+    n_users : int
+    """
+    if result_dir is None:
+        result_dir = RESULT_DIR
+    result_dir = Path(result_dir)
+
+    um = pd.read_csv(
+        result_dir / f"{model_name}_user_metrics.csv",
+        dtype={"user_id": str},
+    )
+
+    metric_cols = [c for c in ["Recall@10", "NDCG@10", "HitRate@10", "MRR@10"]
+                   if c in um.columns]
+
+    # Overall: micro-average
+    overall_vals = um[metric_cols].mean()
+    overall_dict = overall_vals.to_dict()
+
+    overall_df = overall_vals.to_frame().T
+    overall_df.insert(0, "model", model_name)
+    overall_df.to_csv(
+        result_dir / f"{model_name}_overall_metrics.csv", index=False
+    )
+
+    # Per-group
+    group_dict = {}
+    if "activity_group" in um.columns:
+        agg = {"users": ("user_id", "nunique")}
+        for col in metric_cols:
+            safe = col.replace("@", "_at_")
+            agg[safe] = (col, "mean")
+        grouped = (
+            um.groupby("activity_group", as_index=False)
+            .agg(**agg)
+        )
+        grouped.insert(0, "model", model_name)
+        grouped.to_csv(
+            result_dir / f"{model_name}_by_activity_group.csv", index=False
+        )
+        for _, row in grouped.iterrows():
+            grp = row["activity_group"]
+            group_dict[grp] = {col: row[col.replace("@", "_at_")] for col in metric_cols
+                                if col.replace("@", "_at_") in row}
+
+    return overall_dict, group_dict, len(um)
+
+
 def evaluate_rankings(
     model_name,
     rankings,

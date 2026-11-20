@@ -1,0 +1,5 @@
+group,n_users,avg_overlap_hybrid_mf,avg_overlap_hybrid_tfidf,note
+Overall,11659,0.2278,0.7647,"Eksploratori. Overlap tinggi = rekomendasi Hybrid didominasi komponen itu. Ini hipotesis, bukan bukti kausalitas."
+Low,6105,0.2867,0.7082,"Eksploratori. Overlap tinggi = rekomendasi Hybrid didominasi komponen itu. Ini hipotesis, bukan bukti kausalitas."
+Medium,2364,0.1982,0.796,"Eksploratori. Overlap tinggi = rekomendasi Hybrid didominasi komponen itu. Ini hipotesis, bukan bukti kausalitas."
+High,3190,0.1372,0.8499,"Eksploratori. Overlap tinggi = rekomendasi Hybrid didominasi komponen itu. Ini hipotesis, bukan bukti kausalitas."

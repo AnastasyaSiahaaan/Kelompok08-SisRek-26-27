@@ -1,14 +1,17 @@
-model,group,avg_pop,n_recs,note
-popularity,N/A,,0,no top10 file
-mf,Overall,599.845870143237,116590,
-mf,Low,636.4121703521704,61050,
-mf,Medium,585.2498730964467,23640,
-mf,High,540.682131661442,31900,
-tfidf_cbf,Overall,33.283068873831375,116590,
-tfidf_cbf,Low,32.50275184275184,61050,
-tfidf_cbf,Medium,34.73811336717428,23640,
-tfidf_cbf,High,33.69815047021944,31900,
-hybrid,Overall,186.21563598936444,116590,
-hybrid,Low,228.5341850941851,61050,
-hybrid,Medium,163.685448392555,23640,
-hybrid,High,121.9230407523511,31900,
+model,label,group,avg_popularity,n_recs
+popularity,Popularity,Overall,1232.0088,116590
+popularity,Popularity,Low,1238.5394,61050
+popularity,Popularity,Medium,1233.059,23640
+popularity,Popularity,High,1218.7324,31900
+mf,MF (n=32),Overall,534.0734,116590
+mf,MF (n=32),Low,567.4712,61050
+mf,MF (n=32),Medium,520.6808,23640
+mf,MF (n=32),High,480.0817,31900
+tfidf_cbf,TF-IDF CBF,Overall,29.3312,116590
+tfidf_cbf,TF-IDF CBF,Low,28.5254,61050
+tfidf_cbf,TF-IDF CBF,Medium,30.7825,23640
+tfidf_cbf,TF-IDF CBF,High,29.7977,31900
+hybrid,Hybrid (a=0.5),Overall,165.3769,116590
+hybrid,Hybrid (a=0.5),Low,203.12,61050
+hybrid,Hybrid (a=0.5),Medium,145.2605,23640
+hybrid,Hybrid (a=0.5),High,108.0519,31900

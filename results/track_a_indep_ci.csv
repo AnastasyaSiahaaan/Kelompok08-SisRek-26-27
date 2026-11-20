@@ -1,0 +1,5 @@
+model,label,metric,mean_high,mean_low,diff_high_minus_low,ci_lo_95,ci_hi_95,n_high,n_low,interpretation,note,n_bootstrap,seed
+popularity,Popularity,NDCG@10,0.007014,0.010707,-0.003693,-0.006093,-0.001272,3190,6105,High < Low (CI tidak memuat 0),Bootstrap independen (user High dan Low berbeda). Gunakan hati-hati: confounding dari item pool berbeda.,10000,42
+mf,MF (n=32),NDCG@10,0.008961,0.007427,0.001534,-0.000939,0.004082,3190,6105,Tidak dapat disimpulkan (CI memuat 0),Bootstrap independen (user High dan Low berbeda). Gunakan hati-hati: confounding dari item pool berbeda.,10000,42
+tfidf_cbf,TF-IDF CBF,NDCG@10,0.006153,0.007199,-0.001046,-0.003396,0.001368,3190,6105,Tidak dapat disimpulkan (CI memuat 0),Bootstrap independen (user High dan Low berbeda). Gunakan hati-hati: confounding dari item pool berbeda.,10000,42
+hybrid,Hybrid (a=0.5),NDCG@10,0.009853,0.008238,0.001615,-0.001396,0.004691,3190,6105,Tidak dapat disimpulkan (CI memuat 0),Bootstrap independen (user High dan Low berbeda). Gunakan hati-hati: confounding dari item pool berbeda.,10000,42

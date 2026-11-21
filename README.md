@@ -123,7 +123,7 @@ Kelompok08-SisRek-26-27/
 |   |-- bootstrap_ci.py          # CI untuk model appendix (kNN, Pop Recency, Hybrid New)
 |   |-- dataset_statistics.py
 |   |-- track_a_analysis.py      # analisis Track A utama (bootstrap, CI, overlap)
-|   |-- track_a_final.py         # analisis tambahan (regresi, kuintil, CI per user)
+|   |-- track_a_final.py         # analisis tambahan (regresi, tertil/kuintil nilai-based, CI per user)
 |   `-- add_hitrate_mrr.py       # tambahkan HitRate/MRR dari recs yang sudah ada
 |-- tests/
 |   `-- test_metrics.py          # 6 unit test (Recall, NDCG, HitRate, MRR, groups, pipeline)
@@ -188,7 +188,7 @@ python src/compare_results.py
 python src/track_a_analysis.py
 ```
 
-### 8f. Analisis tambahan (regresi, kuintil, CI per user, figure)
+### 8f. Analisis tambahan (regresi per model, tertil/kuintil nilai-based, CI per user, figure)
 
 ```powershell
 python src/track_a_final.py
@@ -229,7 +229,7 @@ python src/tune_hyperparameters.py
 | `results/track_a_bootstrap_ci.csv` | CI paired 95%/99.29% semua perbandingan |
 | `results/track_a_diff_of_diff.csv` | DoD Hybrid-Popularity (High-Low) + CI |
 | `results/track_a_regression.csv` | Regresi delta(NDCG) ~ log(interactions) + CI kemiringan |
-| `results/track_a_sensitivity.csv` | NDCG per tertil/kuintil + DoD |
+| `results/track_a_sensitivity.csv` | NDCG per tertil (T1-T3) dan kuintil (Q1-Q5) nilai-based + DoD |
 | `results/track_a_relevant_pop.csv` | Popularitas item relevan per kelompok (CI per user) |
 | `results/track_a_ndcg_bar.png` | Bar chart NDCG@10 dengan error bar CI 95% |
 | `results/experiment_log.csv` | Log semua run (timestamp, git commit, params, metrik) |

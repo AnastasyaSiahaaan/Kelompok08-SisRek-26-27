@@ -3,15 +3,35 @@ Track A - Analisis Final (tambahan atas track_a_analysis.py v3)
 
 Menghasilkan:
   results/track_a_table_final.csv    - 16 baris lengkap + kolom *_best
-  results/track_a_regression.csv     - regresi delta(NDCG) ~ log(interactions)
-                                       + CI bootstrap kemiringan per model
-  results/track_a_quintile_ndcg.csv  - NDCG@10 per kuintil x model (tabel 5x4)
-  results/track_a_relevant_pop.csv   - diperbarui: CI bootstrap per USER
-  results/track_a_ndcg_bar.png       - diperbarui: error bar CI bootstrap mean
+  results/track_a_regression.csv     - regresi NDCG ~ log_e(interaksi) per model
+                                       + CI bootstrap kemiringan (10.000 iterasi)
+  results/track_a_quintile_ndcg.csv  - NDCG per kuintil x model (tabel 5 x 4)
+  results/track_a_sensitivity.csv    - sensitivitas tertil & kuintil (nilai-based)
+  results/track_a_dod_sensitivity.csv - DoD Hybrid-Popularity per skema
+  results/track_a_relevant_pop.csv   - popularitas item relevan; CI per USER
+  results/track_a_ndcg_bar.png       - bar chart NDCG@10 dengan error bar CI 95%
 
-Poin FREEZE_CONFIG:
-  C7 berstatus EKSPLORATORI di validation, baru menjadi konfirmatori di FinalTest.
-  Skema utama: [1-5],[6-8],[9+]. Tertil/kuintil = analisis sensitivitas saja.
+PERBAIKAN PEMBAGIAN KELOMPOK:
+  Versi lama memakai np.percentile(np.unique(vals)) -- percentil dari NILAI UNIK,
+  bukan dari distribusi user. Pada data diskrit skewed (median=5, max=270) ini
+  menghasilkan batas yang sangat besar (mis. Q1 mencakup 97% user).
+
+  Versi ini memakai np.percentile(counts.to_numpy()) -- percentil dari DISTRIBUSI
+  SEMUA USER, lalu pd.cut dengan batas nilai integer. Semua user dengan jumlah
+  interaksi yang sama dijamin masuk kelompok yang sama.
+
+  Kuintil hasil: Q1[1-3]=2899, Q2[4]=1873, Q3[5-6]=2355, Q4[7-11]=2462, Q5[12-270]=2070
+
+Regresi:
+  Dijalankan terpisah untuk masing-masing model (bukan selisih).
+  NDCG@10_per_user ~ b0 + b1 * log_e(train_interactions).
+  Selisih slope antar model tidak independen (berbagi komponen Popularity).
+
+Popularitas item:
+  "Popularitas" = jumlah interaksi positif (rating >= 4) di training.
+  Definisi sama untuk item relevan dan item Top-10 rekomendasi.
+  Rata-rata per USER (bukan per item) untuk item relevan.
+  Rasio avg_top10_popularity / avg_relevant_pop sekitar 17x (satu orde besaran).
 
 Jalankan dari root proyek:
     python src/track_a_final.py
@@ -107,76 +127,68 @@ def build_and_save_final_table(dfs: dict) -> pd.DataFrame:
 
 
 # ===========================================================================
-# BAGIAN 2 - Regresi delta(NDCG) ~ log(interactions)
+# BAGIAN 2 - Regresi NDCG@10 ~ log_e(interaksi) per model
 # ===========================================================================
 
 def run_trend_regression(dfs: dict) -> pd.DataFrame:
     """
-    Per user: delta = NDCG@10(model) - NDCG@10(popularity).
-    Regresi OLS: delta ~ b0 + b1 * log(train_interactions).
+    Regresi OLS terpisah untuk masing-masing model:
+        NDCG@10_per_user ~ b0 + b1 * log_e(train_interactions)
+
     Bootstrap 10.000 resampling per user untuk CI kemiringan b1.
+    Basis log: natural (log_e).
 
-    Lakukan untuk: MF, TF-IDF, Hybrid vs Popularity.
+    CATATAN: Selisih slope antar model (mis. Hybrid - Popularity) TIDAK
+    independen karena user yang sama muncul di kedua regresi. Laporkan
+    selisih slope sebagai deskriptif, bukan uji terpisah.
     """
-    act = pd.read_csv(BASE_DIR / "data/supporting/user_activity_train.csv",
-                      dtype={"user_id": str})
+    act     = pd.read_csv(BASE_DIR / "data/supporting/user_activity_train.csv",
+                          dtype={"user_id": str})
     int_map = act.set_index("user_id")["train_interactions"].to_dict()
+    rng     = np.random.default_rng(RANDOM_SEED)
+    rows    = []
 
-    rng  = np.random.default_rng(RANDOM_SEED)
-    rows = []
-
-    for m in ["mf", "tfidf_cbf", "hybrid"]:
-        df_m   = dfs[m]
-        df_pop = dfs["popularity"]
-        common = df_m.index.intersection(df_pop.index)
-
-        ndcg_m   = df_m.loc[common, "NDCG@10"].fillna(0).to_numpy(np.float64)
-        ndcg_pop = df_pop.loc[common, "NDCG@10"].fillna(0).to_numpy(np.float64)
-        delta    = ndcg_m - ndcg_pop
-
-        # log(interactions), skip users tanpa data
-        log_int = np.array([np.log(max(int_map.get(u, 1), 1)) for u in common],
+    for m in MODELS:
+        df      = dfs[m]
+        uids    = df.index.tolist()
+        ndcg    = df["NDCG@10"].fillna(0).to_numpy(np.float64)
+        log_int = np.array([np.log(max(int_map.get(u, 1), 1)) for u in uids],
                            dtype=np.float64)
 
-        # OLS observed
-        X   = np.column_stack([np.ones(len(log_int)), log_int])
-        b_obs = np.linalg.lstsq(X, delta, rcond=None)[0]  # [b0, b1]
-        b1_obs = b_obs[1]
+        X       = np.column_stack([np.ones(len(ndcg)), log_int])
+        b_obs   = np.linalg.lstsq(X, ndcg, rcond=None)[0]
+        b0_obs, b1_obs = b_obs[0], b_obs[1]
 
-        # Bootstrap CI untuk b1
-        n = len(delta)
+        n       = len(ndcg)
         boot_b1 = []
         for _ in range(N_BOOTSTRAP):
-            idx = rng.choice(n, size=n, replace=True)
-            X_b   = X[idx]
-            d_b   = delta[idx]
-            b_b   = np.linalg.lstsq(X_b, d_b, rcond=None)[0]
+            idx   = rng.choice(n, size=n, replace=True)
+            b_b   = np.linalg.lstsq(X[idx], ndcg[idx], rcond=None)[0]
             boot_b1.append(b_b[1])
-        boot_b1 = np.array(boot_b1)
+        boot_b1  = np.array(boot_b1)
         ci_lo, ci_hi = np.percentile(boot_b1, [2.5, 97.5])
 
-        if ci_lo > 0:
-            interp = "b1 > 0: delta meningkat seiring interaksi (CI tidak memuat 0)"
-        elif ci_hi < 0:
-            interp = "b1 < 0: delta menurun seiring interaksi (CI tidak memuat 0)"
-        else:
-            interp = "Tidak dapat disimpulkan (CI memuat 0)"
+        if   ci_lo > 0: interp = "b1 > 0: NDCG cenderung naik seiring log(interaksi)"
+        elif ci_hi < 0: interp = "b1 < 0: NDCG cenderung turun seiring log(interaksi)"
+        else:           interp = "Tidak dapat disimpulkan (CI memuat 0)"
 
         rows.append({
             "model":          m,
             "label":          MODEL_LABELS[m],
-            "comparison":     f"{MODEL_LABELS[m]} - Popularity",
             "metric":         "NDCG@10",
-            "b0_intercept":   round(float(b_obs[0]), 7),
+            "log_base":       "e (natural)",
+            "b0_intercept":   round(float(b0_obs), 7),
             "b1_slope":       round(float(b1_obs), 7),
             "b1_ci_lo_95":    round(float(ci_lo), 7),
             "b1_ci_hi_95":    round(float(ci_hi), 7),
             "n_users":        n,
             "interpretation": interp,
             "analysis_type":  "exploratory",
-            "note": ("delta = NDCG(model) - NDCG(Popularity) per user. "
-                     "log = log naturel jumlah interaksi training. "
-                     "Bootstrap per user, 10000 iterasi, seed=42."),
+            "note": (
+                "Regresi OLS per model (bukan selisih). "
+                "Selisih slope antar model tidak independen karena user sama. "
+                "Bootstrap resampling per user, 10.000 iterasi, seed=42."
+            ),
             "n_bootstrap":    N_BOOTSTRAP,
             "seed":           RANDOM_SEED,
         })
@@ -185,72 +197,152 @@ def run_trend_regression(dfs: dict) -> pd.DataFrame:
 
 
 # ===========================================================================
-# BAGIAN 3 - NDCG@10 per kuintil x model (tabel 5 x 4)
+# BAGIAN 3 - NDCG@10 per tertil dan kuintil (nilai-based, bukan rank)
 # ===========================================================================
 
-def build_quintile_ndcg(dfs: dict) -> pd.DataFrame:
+def _cut_by_value(counts: pd.Series, n_bins: int, label_prefix: str):
     """
-    Hitung NDCG@10 rata-rata tiap model di setiap kuintil interaksi training.
-    Kuintil dihitung dari distribusi user evaluable.
-    Tampilkan apakah pola monoton.
+    Potong berdasarkan NILAI interaksi menggunakan pd.cut.
+    Semua user dengan nilai interaksi yang sama SELALU masuk kelompok yang sama.
+    Ukuran kelompok boleh tidak persis sama.
+
+    Metode:
+      Langkah 1: Hitung kuantil dari DISTRIBUSI SEMUA USER (bukan dari nilai unik).
+        Ini memastikan tiap persentil merepresentasikan jumlah user proporsional,
+        bukan representasi nilai unik yang sangat skewed pada data diskrit.
+        Bug lama memakai np.unique(vals) lalu percentile -- menghasilkan batas
+        yang sangat besar (mis. Q1 mencakup 97% user).
+      Langkah 2: Bulatkan ke integer dan hapus duplikat.
+      Langkah 3: pd.cut dengan include_lowest=True -- semua user interaksi sama
+        dijamin masuk kelompok yang sama karena batas berdasarkan nilai.
+
+    Contoh kuintil (n=11659 user, median=5):
+      Kuantil user P20/40/60/80: [3, 4, 6, 11]
+      Q1:[1-3], Q2:[4], Q3:[5-6], Q4:[7-11], Q5:[12-270]
+
+    Returns:
+        assignment : Series {user_id -> label}  (dtype str)
+        edges_desc : list of (label, lo_inclusive, hi_inclusive, n_users)
+    """
+    # Langkah 1: persentil dari distribusi SEMUA user
+    quant_points = np.linspace(0, 100, n_bins + 1)
+    raw_edges    = np.percentile(counts.to_numpy(), quant_points)
+
+    # Langkah 2: bulatkan ke integer, hapus duplikat
+    int_edges = sorted(set(int(np.round(e)) for e in raw_edges))
+    if len(int_edges) < 2:
+        int_edges = [int(counts.min()), int(counts.max())]
+
+    # Langkah 3: bins untuk pd.cut -- offset -1 pada batas bawah
+    bins_cut   = [int_edges[0] - 1] + int_edges[1:]
+    bins_cut   = sorted(set(bins_cut))
+    n_actual   = len(bins_cut) - 1
+    labels_lbl = [f"{label_prefix}{i+1}" for i in range(n_actual)]
+
+    cut = pd.cut(counts, bins=bins_cut, labels=labels_lbl, include_lowest=True)
+    assignment = cut.astype(str).rename("group_label")
+
+    edges_desc = []
+    for lbl, lo_b, hi_b in zip(labels_lbl, bins_cut[:-1], bins_cut[1:]):
+        members = counts[cut == lbl]
+        lo_inc  = int(members.min()) if len(members) > 0 else lo_b + 1
+        hi_inc  = int(members.max()) if len(members) > 0 else hi_b
+        edges_desc.append((lbl, lo_inc, hi_inc, len(members)))
+
+    return assignment, edges_desc
+
+
+def build_quintile_and_tertile_ndcg(dfs: dict) -> tuple:
+    """
+    Hitung NDCG@10 per kuintil dan tertil (nilai-based, pd.cut).
+    Juga hitung DoD Hybrid-Popularity (top - bottom) dengan CI bootstrap.
+    Returns (sens_df, dod_df).
     """
     act = pd.read_csv(BASE_DIR / "data/supporting/user_activity_train.csv",
                       dtype={"user_id": str})
     evaluable = set(dfs["popularity"].index)
     act = act[act["user_id"].isin(evaluable)].copy()
+    counts = act.set_index("user_id")["train_interactions"]
 
-    vals   = act["train_interactions"].to_numpy(float)
-    edges  = np.percentile(vals, [0, 20, 40, 60, 80, 100])
-    # Pastikan edges unik
-    edges  = np.unique(edges)
-    n_bins = len(edges) - 1
-    labels = [f"Q{i+1}" for i in range(n_bins)]
+    rng = np.random.default_rng(RANDOM_SEED)
 
-    def assign_q(v):
-        for i, (lo, hi) in enumerate(zip(edges[:-1], edges[1:])):
-            if i == 0 and v <= hi:
-                return labels[i]
-            elif lo < v <= hi:
-                return labels[i]
-        return labels[-1]
+    def _dod_ci(group_map, top_lbl, bot_lbl, metric="NDCG@10"):
+        common  = set(dfs["hybrid"].index) & set(dfs["popularity"].index)
+        hi_idx  = [u for u in common if group_map.get(u) == top_lbl]
+        lo_idx  = [u for u in common if group_map.get(u) == bot_lbl]
+        if not hi_idx or not lo_idx:
+            return np.nan, np.nan, np.nan, "kelompok kosong"
+        d_hi = (dfs["hybrid"].loc[hi_idx, metric].fillna(0).to_numpy(np.float64) -
+                dfs["popularity"].loc[hi_idx, metric].fillna(0).to_numpy(np.float64))
+        d_lo = (dfs["hybrid"].loc[lo_idx, metric].fillna(0).to_numpy(np.float64) -
+                dfs["popularity"].loc[lo_idx, metric].fillna(0).to_numpy(np.float64))
+        obs  = d_hi.mean() - d_lo.mean()
+        boot = np.array([
+            rng.choice(d_hi, size=len(d_hi), replace=True).mean() -
+            rng.choice(d_lo, size=len(d_lo), replace=True).mean()
+            for _ in range(N_BOOTSTRAP)
+        ])
+        ci_lo, ci_hi = np.percentile(boot, [2.5, 97.5])
+        if   ci_lo > 0: interp = "DoD > 0 (CI tidak memuat 0)"
+        elif ci_hi < 0: interp = "DoD < 0 (CI tidak memuat 0)"
+        else:           interp = "Tidak dapat disimpulkan (CI memuat 0)"
+        return obs, ci_lo, ci_hi, interp
 
-    act["quintile"] = act["train_interactions"].apply(assign_q)
-    q_map = act.set_index("user_id")["quintile"].to_dict()
+    all_rows = []
+    dod_rows = []
 
-    # Edge ranges per kuintil
-    q_edges = {}
-    for lbl, lo, hi in zip(labels, edges[:-1], edges[1:]):
-        q_edges[lbl] = (int(lo), int(hi))
+    for scheme_name, n_bins, prefix in [("tertile", 3, "T"), ("quintile", 5, "Q")]:
+        assignment, edges_desc = _cut_by_value(counts, n_bins, prefix)
+        group_map = assignment.to_dict()
 
-    rows = []
-    for lbl in labels:
-        row = {"quintile": lbl,
-               "edge_lo": q_edges[lbl][0],
-               "edge_hi": q_edges[lbl][1]}
-        users_q = [u for u in evaluable if q_map.get(u) == lbl]
-        row["n_users"] = len(users_q)
-        for m in MODELS:
-            df = dfs[m]
-            vals_q = df.loc[df.index.isin(users_q), "NDCG@10"].fillna(0)
-            row[MODEL_LABELS[m]] = round(float(vals_q.mean()), 6) if len(vals_q) > 0 else np.nan
-        rows.append(row)
+        # Cetak batas aktual
+        print(f"\n  Skema {scheme_name}: batas nilai interaksi (inklusif)")
+        for lbl, lo, hi, n in edges_desc:
+            pct = 100 * n / len(evaluable)
+            print(f"    {lbl}: [{lo}, {hi}]  n={n} ({pct:.1f}%)")
 
-    result = pd.DataFrame(rows)
+        labels_lbl = [e[0] for e in edges_desc]
+        for lbl, lo_inc, hi_inc, _ in edges_desc:
+            row = {"scheme": scheme_name, "group_label": lbl,
+                   "edge_lo": lo_inc, "edge_hi": hi_inc}
+            users_grp = [u for u in evaluable if group_map.get(u) == lbl]
+            row["n_users"] = len(users_grp)
+            row["pct_users"] = round(100 * len(users_grp) / len(evaluable), 1)
+            for m in MODELS:
+                df = dfs[m]
+                v  = df.loc[df.index.isin(users_grp), "NDCG@10"].fillna(0)
+                row[MODEL_LABELS[m]] = round(float(v.mean()), 6) if len(v) > 0 else np.nan
+            all_rows.append(row)
 
-    # Tambahkan cek monotonisitas per model
+        obs, ci_lo, ci_hi, interp = _dod_ci(group_map, labels_lbl[-1], labels_lbl[0])
+        dod_rows.append({
+            "scheme": scheme_name, "top_label": labels_lbl[-1],
+            "bot_label": labels_lbl[0],
+            "diff_of_diff": round(float(obs), 6) if not np.isnan(obs) else np.nan,
+            "ci_lo_95":     round(float(ci_lo), 6) if not np.isnan(ci_lo) else np.nan,
+            "ci_hi_95":     round(float(ci_hi), 6) if not np.isnan(ci_hi) else np.nan,
+            "interpretation": interp, "metric": "NDCG@10",
+            "comparison": "Hybrid-Popularity", "analysis_type": "exploratory",
+            "n_bootstrap": N_BOOTSTRAP, "seed": RANDOM_SEED,
+        })
+
+    return pd.DataFrame(all_rows), pd.DataFrame(dod_rows)
+
+
+# backward-compat wrapper for callers expecting (df, mono_notes)
+def build_quintile_ndcg(dfs: dict):
+    sens_df, _ = build_quintile_and_tertile_ndcg(dfs)
+    q_df = sens_df[sens_df["scheme"] == "quintile"].copy()
+    q_df = q_df.rename(columns={"group_label": "quintile"})
+    # monoton check
     mono_notes = {}
     for m in MODELS:
-        col_vals = result[MODEL_LABELS[m]].tolist()
+        col_vals = q_df[MODEL_LABELS[m]].tolist()
         diffs = [col_vals[i+1] - col_vals[i] for i in range(len(col_vals)-1)]
-        if all(d >= -1e-9 for d in diffs):
-            mono_notes[MODEL_LABELS[m]] = "monoton naik"
-        elif all(d <= 1e-9 for d in diffs):
-            mono_notes[MODEL_LABELS[m]] = "monoton turun"
-        else:
-            mono_notes[MODEL_LABELS[m]] = "tidak monoton"
-
-    result["_note"] = ""  # placeholder
-    return result, mono_notes
+        if all(d >= -1e-9 for d in diffs):   mono_notes[MODEL_LABELS[m]] = "monoton naik"
+        elif all(d <= 1e-9 for d in diffs):  mono_notes[MODEL_LABELS[m]] = "monoton turun"
+        else:                                 mono_notes[MODEL_LABELS[m]] = "tidak monoton"
+    return q_df, mono_notes
 
 
 # ===========================================================================
@@ -431,24 +523,39 @@ def main():
     build_and_save_final_table(dfs)
     print("  -> results/track_a_table_final.csv")
 
-    # 2. Regresi tren kontinu
-    print(f"\n[2] Regresi delta(NDCG) ~ log(interactions) (n_boot={N_BOOTSTRAP})")
+    # 2. Regresi per model
+    print(f"\n[2] Regresi NDCG@10 ~ log_e(interaksi) per model (n_boot={N_BOOTSTRAP})")
     reg_df = run_trend_regression(dfs)
     reg_df.to_csv(RESULT_DIR / "track_a_regression.csv", index=False)
-    print(reg_df[["label", "b1_slope", "b1_ci_lo_95", "b1_ci_hi_95",
-                  "interpretation"]].to_string(index=False))
+    print(reg_df[["label", "b0_intercept", "b1_slope",
+                  "b1_ci_lo_95", "b1_ci_hi_95", "interpretation"]].to_string(index=False))
+    # Selisih slope (deskriptif, bukan uji independen)
+    slopes = dict(zip(reg_df["model"], reg_df["b1_slope"]))
+    print("  Selisih slope terhadap Popularity (deskriptif, bukan uji independen):")
+    for m in ["mf", "tfidf_cbf", "hybrid"]:
+        print(f"    {MODEL_LABELS[m]} - Popularity: {slopes[m] - slopes['popularity']:+.7f}")
 
-    # 3. NDCG per kuintil
-    print("\n[3] NDCG@10 per kuintil x model")
-    q_df, mono_notes = build_quintile_ndcg(dfs)
+    # 3. NDCG per kuintil (dan tertil dalam sensitivity)
+    print("\n[3] NDCG@10 per tertil dan kuintil (nilai-based, user interaksi sama -> kelompok sama)")
+    sens_df, dod_df = build_quintile_and_tertile_ndcg(dfs)
+    sens_df.to_csv(RESULT_DIR / "track_a_sensitivity.csv", index=False)
+    dod_df.to_csv(RESULT_DIR / "track_a_dod_sensitivity.csv", index=False)
+
+    # Simpan kuintil saja ke track_a_quintile_ndcg.csv (kompatibilitas)
+    q_df = sens_df[sens_df["scheme"] == "quintile"].copy()
+    q_df = q_df.rename(columns={"group_label": "quintile"})
     q_df.to_csv(RESULT_DIR / "track_a_quintile_ndcg.csv", index=False)
-    display_cols = ["quintile", "edge_lo", "edge_hi", "n_users"] + \
-                   [MODEL_LABELS[m] for m in MODELS]
-    print(q_df[display_cols].to_string(index=False))
-    print("  Monotonisitas per model (Q1->Q5):")
-    for lbl, note in mono_notes.items():
-        print(f"    {lbl}: {note}")
 
+    for scheme in ["tertile", "quintile"]:
+        sub = sens_df[sens_df["scheme"] == scheme]
+        dcols = ["group_label", "edge_lo", "edge_hi", "n_users", "pct_users"] + \
+                [MODEL_LABELS[m] for m in MODELS]
+        print(f"\n  === {scheme.upper()} ===")
+        print(sub[dcols].to_string(index=False))
+
+    print("\n  DoD Hybrid-Popularity (top - bottom) per skema:")
+    print(dod_df[["scheme", "top_label", "bot_label", "diff_of_diff",
+                  "ci_lo_95", "ci_hi_95", "interpretation"]].to_string(index=False))
     # 4. Popularitas item relevan: CI per user
     print("\n[4] Popularitas item relevan (CI bootstrap per USER)")
     rel_pop_df = compute_relevant_pop_per_user(dfs)

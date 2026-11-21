@@ -60,14 +60,34 @@ Dikodekan di `src/config.py` (`EVAL_CONFIG["activity_bins"]`) dan
 Batas ini ditetapkan sebelum melihat distribusi data validasi.
 
 **Skema alternatif (sensitivitas saja, bukan untuk uji konfirmatori):**
-- Tertil: batas Q33/Q67 dari distribusi user evaluable
-- Kuintil: batas Q20/Q40/Q60/Q80
 
-Hasil sensitivitas (validation, NDCG@10): tertil menunjukkan DoD
-Hybrid-Popularity (top-bottom) signifikan (CI 95% tidak memuat 0),
-kuintil tidak. Pola **tidak seragam** antar skema -- kesimpulan sensitif
-terhadap pilihan batas. Semua analisis skema alternatif berstatus
-**eksploratori**.
+Batas dihitung dengan `np.percentile(distribusi_semua_user)` lalu `pd.cut` nilai integer,
+sehingga user dengan jumlah interaksi sama dijamin masuk kelompok yang sama.
+
+Tertil (batas dari P33/P67 distribusi user):
+
+| Kelompok | Rentang | n users | % |
+|---|---|---|---|
+| T1 | 1 -- 4 | 4 772 | 40.9% |
+| T2 | 5 -- 7 | 3 107 | 26.6% |
+| T3 | 8 -- 270 | 3 780 | 32.4% |
+
+Kuintil (batas dari P20/P40/P60/P80 distribusi user):
+
+| Kelompok | Rentang | n users | % |
+|---|---|---|---|
+| Q1 | 1 -- 3 | 2 899 | 24.9% |
+| Q2 | 4 | 1 873 | 16.1% |
+| Q3 | 5 -- 6 | 2 355 | 20.2% |
+| Q4 | 7 -- 11 | 2 462 | 21.1% |
+| Q5 | 12 -- 270 | 2 070 | 17.8% |
+
+DoD Hybrid-Popularity (top - bottom) NDCG@10 (eksploratori):
+- Tertil (T3-T1): +0.005370, CI 95% [+0.001632, +0.009078] — CI tidak memuat 0
+- Kuintil (Q5-Q1): +0.004211, CI 95% [-0.000487, +0.009072] — CI memuat 0, tidak dapat disimpulkan
+
+Pola **tidak seragam** antar skema -- kesimpulan sensitif terhadap pilihan batas.
+Semua analisis skema alternatif berstatus **eksploratori**.
 
 ---
 

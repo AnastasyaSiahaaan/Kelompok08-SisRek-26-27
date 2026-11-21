@@ -1,0 +1,3 @@
+scheme,top_label,bot_label,diff_of_diff,ci_lo_95,ci_hi_95,interpretation,metric,comparison,analysis_type,n_bootstrap,seed
+tertile,T3,T1,0.00537,0.001632,0.009078,DoD > 0 (CI tidak memuat 0),NDCG@10,Hybrid-Popularity,exploratory,10000,42
+quintile,Q5,Q1,0.004211,-0.000487,0.009072,Tidak dapat disimpulkan (CI memuat 0),NDCG@10,Hybrid-Popularity,exploratory,10000,42

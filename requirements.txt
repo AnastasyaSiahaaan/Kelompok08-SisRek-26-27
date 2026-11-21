@@ -1,3 +1,7 @@
+# Versi di-pin dari environment Python 3.13.7 (Windows) yang digunakan untuk eksperimen.
+# Dibuat dengan importlib.metadata pada environment aktif.
+# Install: pip install -r requirements.txt
+
 pandas==3.0.0
 numpy==2.4.2
 scikit-learn==1.8.0

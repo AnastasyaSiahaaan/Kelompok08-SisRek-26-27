@@ -62,7 +62,7 @@ semua dicatat di `results/experiment_log.csv`.
 | T3 | CI independen High-Low | track_a_indep_ci.csv | Final |
 | T4 | Selisih-dari-selisih (DoD) | track_a_diff_of_diff.csv | Final |
 | T5 | Regresi delta ~ log(interactions) | track_a_regression.csv | Final |
-| T6 | NDCG per kuintil | track_a_quintile_ndcg.csv | Final |
+| T6 | NDCG per tertil dan kuintil (nilai-based) | track_a_quintile_ndcg.csv, track_a_sensitivity.csv | Final |
 | T7 | Sensitivitas batas kelompok | track_a_sensitivity.csv | Final |
 | T8 | Popularitas item relevan per kelompok | track_a_relevant_pop.csv | Final |
 | T9 | Overlap Top-10 Hybrid vs MF/TF-IDF | track_a_overlap.csv | Final |

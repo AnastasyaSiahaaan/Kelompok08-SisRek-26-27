@@ -1,3 +1,4 @@
+
 .venv/
 __pycache__/
 *.pyc
@@ -7,6 +8,16 @@ __pycache__/
 *.log
 *.tmp
 task-*.log
+final_out.txt
+run_final.py
+diag_cut.py
+check_syntax.py
+test_clone.py
+verify_table.py
+
+# Temporary analysis output
+results/rerun/
+.pytest_cache/
 
 # Data protection (Track A: test set strictly forbidden)
 *test*.csv
